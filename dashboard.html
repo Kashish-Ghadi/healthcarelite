@@ -1,49 +1,143 @@
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+body{
 
-<script src="js/firebase.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+margin:0;
+font-family: Inter, system-ui;
+background:#f5f7fb;
 
-<div class="nav">
-<div class="logo">Health Dashboard</div>
-<button onclick="logout()">Logout</button>
-</div>
+}
 
-<div class="container">
+/* center layout */
 
-<h2>Health Overview</h2>
+.center{
 
-<div class="grid">
+display:flex;
+align-items:center;
+justify-content:center;
+height:100vh;
 
-<div class="card">
-<h4>Heart Rate</h4>
-<div id="hr" class="stat">--</div>
-</div>
+}
 
-<div class="card">
-<h4>SpO2</h4>
-<div id="spo2" class="stat">--</div>
-</div>
+/* login card */
 
-<div class="card">
-<h4>Temperature</h4>
-<div id="temp" class="stat">--</div>
-</div>
+.loginCard{
 
-<div class="card">
-<h4>Status</h4>
-<div id="status" class="stat">Normal</div>
-</div>
+background:white;
+padding:50px;
+border-radius:18px;
+width:360px;
+text-align:center;
+box-shadow:0 20px 40px rgba(0,0,0,0.08);
 
-</div>
+}
 
-<div class="card">
+.logoCircle{
 
-<h3>Health Trends</h3>
+width:70px;
+height:70px;
+border-radius:50%;
+background:#1d6fdc;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:26px;
+margin:auto;
+margin-bottom:20px;
 
-<canvas id="chart"></canvas>
+}
 
-</div>
+.primaryBtn{
 
-</div>
+width:100%;
+background:#1d6fdc;
+color:white;
+border:none;
+padding:14px;
+border-radius:10px;
+font-size:16px;
+margin-top:20px;
+cursor:pointer;
+
+}
+
+.primaryBtn:hover{
+
+background:#1557ad;
+
+}
+
+/* dashboard */
+
+.nav{
+
+display:flex;
+justify-content:space-between;
+padding:20px 40px;
+background:white;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+
+}
+
+.logo{
+
+font-weight:600;
+font-size:18px;
+color:#1d6fdc;
+
+}
+
+.container{
+
+width:90%;
+max-width:1100px;
+margin:auto;
+margin-top:30px;
+
+}
+
+.title{
+
+font-size:26px;
+font-weight:600;
+margin-bottom:20px;
+
+}
+
+/* cards */
+
+.grid{
+
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+
+}
+
+.card{
+
+background:white;
+padding:25px;
+border-radius:14px;
+box-shadow:0 6px 15px rgba(0,0,0,0.06);
+
+}
+
+.stat{
+
+font-size:28px;
+font-weight:600;
+margin-top:10px;
+
+}
+
+/* graph card */
+
+.chartCard{
+
+margin-top:25px;
+padding:25px;
+background:white;
+border-radius:14px;
+box-shadow:0 6px 15px rgba(0,0,0,0.06);
+
+}
