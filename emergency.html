@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Emergency Contacts</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script src="js/firebase.js"></script>
+<script defer src="js/emergency.js"></script>
+
+</head>
+
+<body>
+
+<div class="nav">
+
+<div class="logo">
+Health Dashboard
+</div>
+
+<a href="dashboard.html">⬅ Back</a>
+
+</div>
+
+<div class="container">
+
+<h2 class="title">
+
+Emergency Contacts
+
+</h2>
+
+<div class="card">
+
+<h3>Add Contact</h3>
+
+<input id="type" placeholder="Doctor / Hospital / Family">
+
+<input id="name" placeholder="Name">
+
+<input id="phone" placeholder="Phone">
+
+<input id="address" placeholder="Address">
+
+<button onclick="addContact()" class="primaryBtn">
+
+Add Contact
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h3>Your Contacts</h3>
+
+<div id="contactList">
+
+No contacts yet
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
