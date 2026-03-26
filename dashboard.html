@@ -9,67 +9,235 @@
 
 <link rel="stylesheet" href="css/style.css">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+<!-- Chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- JS files -->
 <script src="js/firebase.js"></script>
-
 <script defer src="js/dashboard.js"></script>
 
 </head>
 
 <body>
 
+<!-- NAVBAR -->
+
 <div class="nav">
 
 <div class="logo">
-Health Dashboard
+❤ Health Dashboard
+</div>
+
+<div>
+
+<a href="dashboard.html" style="margin-right:20px">
+Dashboard
+</a>
+
+<a href="emergency.html">
+Emergency Contacts
+</a>
+
 </div>
 
 </div>
+
+
+<!-- PAGE -->
 
 <div class="container">
 
 <h2 class="title">
+
 Health Overview
+
 </h2>
+
+
+<!-- QUICK ACTIONS -->
+
+<div class="card" style="margin-bottom:25px">
+
+<h3>
+
+Quick Actions
+
+</h3>
+
+<button onclick="location.href='add-record.html'" class="primaryBtn">
+
+Add New Record
+
+</button>
+
+<button onclick="location.href='emergency.html'" class="primaryBtn" style="margin-top:10px">
+
+Emergency Contacts
+
+</button>
+
+</div>
+
+
+<!-- HEALTH CARDS -->
 
 <div class="grid">
 
-<div class="card">
-<h4>Heart Rate</h4>
-<div id="hr" class="stat">--</div>
-</div>
 
 <div class="card">
-<h4>SpO2</h4>
-<div id="spo2" class="stat">--</div>
-</div>
 
-<div class="card">
-<h4>Temperature</h4>
-<div id="temp" class="stat">--</div>
-</div>
+<h4>
 
-<div class="card">
-<h4>Status</h4>
-<div id="status" class="stat">Normal</div>
+Heart Rate
+
+</h4>
+
+<div id="hr" class="stat">
+
+--
+
 </div>
 
 </div>
+
+
+<div class="card">
+
+<h4>
+
+SpO2
+
+</h4>
+
+<div id="spo2" class="stat">
+
+--
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h4>
+
+Temperature
+
+</h4>
+
+<div id="temp" class="stat">
+
+--
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h4>
+
+Fall Detection
+
+</h4>
+
+<div id="fall" class="stat">
+
+No
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<!-- GRAPH -->
 
 <div class="chartCard">
 
-<h3>Health Trends</h3>
+<h3>
 
-<canvas id="chart"></canvas>
+Health Trends
+
+</h3>
+
+<canvas id="chart">
+
+</canvas>
 
 </div>
 
+
+
+<!-- RECENT DATA -->
+
+<div class="card" style="margin-top:25px">
+
+<h3>
+
+Latest Sensor Data
+
+</h3>
+
+<p>
+
+Heart Rate:
+<span id="hrText">
+
+--
+
+</span>
+
+</p>
+
+<p>
+
+SpO2:
+<span id="spo2Text">
+
+--
+
+</span>
+
+</p>
+
+<p>
+
+Temperature:
+<span id="tempText">
+
+--
+
+</span>
+
+</p>
+
+<p>
+
+Fall:
+<span id="fallText">
+
+--
+
+</span>
+
+</p>
+
 </div>
+
+
+</div>
+
+
 
 </body>
 
