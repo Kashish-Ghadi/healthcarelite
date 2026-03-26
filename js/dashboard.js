@@ -1,6 +1,11 @@
-// auto-detect deviceId
+let chart;
 
 const devicesRef = db.ref("devices");
+
+let hrData=[];
+let spo2Data=[];
+let tempData=[];
+let labels=[];
 
 devicesRef.once("value", snapshot => {
 
@@ -8,51 +13,146 @@ const devices = snapshot.val();
 
 if(!devices){
 
-alert("No device data found in Firebase");
+alert("No device found");
 
 return;
 
 }
 
-// get first device id
 const deviceId = Object.keys(devices)[0];
 
-console.log("Detected device:", deviceId);
+console.log("Device:",deviceId);
 
-listenToDevice(deviceId);
+listenLive(deviceId);
+loadGraph(deviceId);
 
 });
 
-function listenToDevice(deviceId){
+function listenLive(deviceId){
 
-const ref = db.ref("devices/"+deviceId+"/latest");
+const ref=db.ref("devices/"+deviceId+"/latest");
 
-ref.on("value", snap => {
+ref.on("value", snap=>{
 
-const d = snap.val();
+const d=snap.val();
 
 if(!d) return;
 
-document.getElementById("hr").innerText =
-Math.round(d.hr);
+document.getElementById("hr").innerText=Math.round(d.hr);
 
-document.getElementById("spo2").innerText =
-d.spo2 + " %";
+document.getElementById("spo2").innerText=d.spo2+"%";
 
-document.getElementById("temp").innerText =
-d.tempC + " °C";
+document.getElementById("temp").innerText=d.tempC+"°C";
 
-document.getElementById("fall").innerText =
-d.fall ? "Detected ⚠" : "Normal";
+if(d.fall){
+
+document.getElementById("status").innerText="Fall detected";
+
+document.getElementById("status").style.color="red";
+
+showAlert();
+
+}else{
+
+document.getElementById("status").innerText="Normal";
+
+document.getElementById("status").style.color="green";
+
+}
 
 });
 
 }
 
-function logout(){
+function loadGraph(deviceId){
 
-auth.signOut();
+const logsRef=db.ref("devices/"+deviceId+"/logs");
 
-window.location="login.html";
+logsRef.limitToLast(10).on("value", snap=>{
+
+const logs=snap.val();
+
+if(!logs) return;
+
+hrData=[];
+spo2Data=[];
+tempData=[];
+labels=[];
+
+Object.values(logs).forEach(l=>{
+
+hrData.push(l.hr);
+
+spo2Data.push(l.spo2);
+
+tempData.push(l.tempC);
+
+labels.push(new Date(l.ts_ms).toLocaleTimeString());
+
+});
+
+drawChart();
+
+});
+
+}
+
+function drawChart(){
+
+const ctx=document.getElementById("chart");
+
+if(chart) chart.destroy();
+
+chart=new Chart(ctx,{
+
+type:"line",
+
+data:{
+
+labels:labels,
+
+datasets:[
+
+{
+
+label:"Heart Rate",
+
+data:hrData,
+
+borderWidth:2
+
+},
+
+{
+
+label:"SpO2",
+
+data:spo2Data,
+
+borderWidth:2
+
+},
+
+{
+
+label:"Temperature",
+
+data:tempData,
+
+borderWidth:2
+
+}
+
+]
+
+}
+
+});
+
+}
+
+function showAlert(){
+
+alert("⚠ FALL DETECTED");
 
 }

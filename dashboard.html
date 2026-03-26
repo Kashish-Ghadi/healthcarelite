@@ -3,6 +3,7 @@
 
 <script src="js/firebase.js"></script>
 <script src="js/dashboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="nav">
 <div class="logo">Health Dashboard</div>
@@ -11,29 +12,37 @@
 
 <div class="container">
 
-<div class="title">Health Overview</div>
+<h2>Health Overview</h2>
 
 <div class="grid">
 
 <div class="card">
-Heart Rate
+<h4>Heart Rate</h4>
 <div id="hr" class="stat">--</div>
 </div>
 
 <div class="card">
-SpO2
+<h4>SpO2</h4>
 <div id="spo2" class="stat">--</div>
 </div>
 
 <div class="card">
-Temperature
+<h4>Temperature</h4>
 <div id="temp" class="stat">--</div>
 </div>
 
 <div class="card">
-Fall Status
-<div id="fall" class="stat">--</div>
+<h4>Status</h4>
+<div id="status" class="stat">Normal</div>
 </div>
+
+</div>
+
+<div class="card">
+
+<h3>Health Trends</h3>
+
+<canvas id="chart"></canvas>
 
 </div>
 
