@@ -1,0 +1,40 @@
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script src="js/firebase.js"></script>
+<script src="js/dashboard.js"></script>
+
+<div class="nav">
+<div class="logo">Health Dashboard</div>
+<button onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+<div class="title">Health Overview</div>
+
+<div class="grid">
+
+<div class="card">
+Heart Rate
+<div id="hr" class="stat">--</div>
+</div>
+
+<div class="card">
+SpO2
+<div id="spo2" class="stat">--</div>
+</div>
+
+<div class="card">
+Temperature
+<div id="temp" class="stat">--</div>
+</div>
+
+<div class="card">
+Fall Status
+<div id="fall" class="stat">--</div>
+</div>
+
+</div>
+
+</div>
