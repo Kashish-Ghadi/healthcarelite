@@ -1,143 +1,76 @@
-body{
+<!DOCTYPE html>
+<html>
 
-margin:0;
-font-family: Inter, system-ui;
-background:#f5f7fb;
+<head>
 
-}
+<meta charset="UTF-8">
 
-/* center layout */
+<title>Health Dashboard</title>
 
-.center{
+<link rel="stylesheet" href="css/style.css">
 
-display:flex;
-align-items:center;
-justify-content:center;
-height:100vh;
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 
-}
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-/* login card */
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-.loginCard{
+<script src="js/firebase.js"></script>
 
-background:white;
-padding:50px;
-border-radius:18px;
-width:360px;
-text-align:center;
-box-shadow:0 20px 40px rgba(0,0,0,0.08);
+<script defer src="js/dashboard.js"></script>
 
-}
+</head>
 
-.logoCircle{
+<body>
 
-width:70px;
-height:70px;
-border-radius:50%;
-background:#1d6fdc;
-color:white;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:26px;
-margin:auto;
-margin-bottom:20px;
+<div class="nav">
 
-}
+<div class="logo">
+Health Dashboard
+</div>
 
-.primaryBtn{
+</div>
 
-width:100%;
-background:#1d6fdc;
-color:white;
-border:none;
-padding:14px;
-border-radius:10px;
-font-size:16px;
-margin-top:20px;
-cursor:pointer;
+<div class="container">
 
-}
+<h2 class="title">
+Health Overview
+</h2>
 
-.primaryBtn:hover{
+<div class="grid">
 
-background:#1557ad;
+<div class="card">
+<h4>Heart Rate</h4>
+<div id="hr" class="stat">--</div>
+</div>
 
-}
+<div class="card">
+<h4>SpO2</h4>
+<div id="spo2" class="stat">--</div>
+</div>
 
-/* dashboard */
+<div class="card">
+<h4>Temperature</h4>
+<div id="temp" class="stat">--</div>
+</div>
 
-.nav{
+<div class="card">
+<h4>Status</h4>
+<div id="status" class="stat">Normal</div>
+</div>
 
-display:flex;
-justify-content:space-between;
-padding:20px 40px;
-background:white;
-box-shadow:0 2px 8px rgba(0,0,0,0.05);
+</div>
 
-}
+<div class="chartCard">
 
-.logo{
+<h3>Health Trends</h3>
 
-font-weight:600;
-font-size:18px;
-color:#1d6fdc;
+<canvas id="chart"></canvas>
 
-}
+</div>
 
-.container{
+</div>
 
-width:90%;
-max-width:1100px;
-margin:auto;
-margin-top:30px;
+</body>
 
-}
-
-.title{
-
-font-size:26px;
-font-weight:600;
-margin-bottom:20px;
-
-}
-
-/* cards */
-
-.grid{
-
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:20px;
-
-}
-
-.card{
-
-background:white;
-padding:25px;
-border-radius:14px;
-box-shadow:0 6px 15px rgba(0,0,0,0.06);
-
-}
-
-.stat{
-
-font-size:28px;
-font-weight:600;
-margin-top:10px;
-
-}
-
-/* graph card */
-
-.chartCard{
-
-margin-top:25px;
-padding:25px;
-background:white;
-border-radius:14px;
-box-shadow:0 6px 15px rgba(0,0,0,0.06);
-
-}
+</html>
