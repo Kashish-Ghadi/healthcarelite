@@ -1,21 +1,25 @@
+const recordsRef = db.ref("manualRecords");
+
 function saveRecord(){
 
-const data={
+const record = {
 
-sys:document.getElementById("sys").value,
+systolic: document.getElementById("sys").value,
 
-dia:document.getElementById("dia").value,
+diastolic: document.getElementById("dia").value,
 
-spo2:document.getElementById("spo2").value,
+spo2: document.getElementById("spo2Input").value,
 
-temp:document.getElementById("temp").value,
+temp: document.getElementById("tempInput").value,
 
-time:Date.now()
+notes: document.getElementById("notes").value,
 
-}
+timestamp: Date.now()
 
-db.ref("manualRecords").push(data);
+};
 
-alert("saved")
+recordsRef.push(record);
+
+alert("Record saved");
 
 }
