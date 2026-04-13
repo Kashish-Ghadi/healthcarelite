@@ -2,8 +2,6 @@ const deviceId = "A4F00F5AC2E8";
 
 let chart;
 
-const db = firebase.database();
-
 
 /* -------- LATEST SENSOR DATA -------- */
 
