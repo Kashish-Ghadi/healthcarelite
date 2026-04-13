@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
@@ -9,10 +8,10 @@
 <link rel="stylesheet" href="css/style.css">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
@@ -27,10 +26,31 @@
 </div>
 
 
+<!-- POPUP -->
+
+<div id="popup" class="popup">
+
+<div class="popupCard">
+
+<h3>Record Details</h3>
+
+<div id="popupContent"></div>
+
+<canvas id="popupChart"></canvas>
+
+<button onclick="closePopup()" class="primaryBtn">
+
+Close
+
+</button>
+
+</div>
+
+</div>
+
+
 <script src="js/firebase.js"></script>
-
 <script src="js/navbar.js"></script>
-
 <script src="js/view-records.js"></script>
 
 <script>

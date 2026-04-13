@@ -12,12 +12,17 @@ loadAllLogs();
 });
 
 
+
+let chart;
+
+
+
 function loadAllLogs(){
 
 let allLogs=[];
 
 
-// manual records
+// manual
 
 db.ref("manualRecords")
 
@@ -33,7 +38,7 @@ allLogs.push({
 
 type:"Manual",
 
-time:r.timestamp || Date.now(),
+time:r.timestamp,
 
 data:r
 
@@ -47,7 +52,7 @@ data:r
 
 
 
-// device logs
+// device
 
 db.ref("devices/A4F00F5AC2E8/logs")
 
@@ -63,7 +68,7 @@ allLogs.push({
 
 type:"Vitals",
 
-time:r.ts_ms || Date.now(),
+time:r.ts_ms,
 
 data:r
 
@@ -77,8 +82,7 @@ data:r
 
 
 
-
-// sensor logs
+// sensors
 
 db.ref("health_monitoring")
 
@@ -94,7 +98,7 @@ allLogs.push({
 
 type:"Sensors",
 
-time:r.ts_ms || Date.now(),
+time:r.ts_ms,
 
 data:r
 
@@ -158,65 +162,149 @@ function showDetails(i){
 
 const log=window.allLogs[i];
 
+const d=log.data;
 
-let details="";
+
+let html=``;
 
 
-if(log.type==="Manual"){
+let actual=[];
 
-details=`
+let normal=[];
 
-BP: ${log.data.systolic}/${log.data.diastolic}
+let labels=[];
 
-SpO2: ${log.data.spo2}%
-
-Temp: ${log.data.temp}°C
-
-Notes: ${log.data.notes || "-"}
-
-`;
-
-}
 
 
 if(log.type==="Vitals"){
 
-details=`
+html=`
 
-Heart Rate: ${log.data.hr}
+Heart Rate: ${d.hr}<br>
 
-SpO2: ${log.data.spo2}%
+SpO2: ${d.spo2}%<br>
 
-Temperature: ${log.data.tempC}°C
+Temp: ${d.tempC}°C<br>
 
-ECG Raw: ${log.data.ecgRaw}
-
-Fall: ${log.data.fall}
+ECG: ${d.ecgRaw}
 
 `;
 
+labels=["HR","SpO2","Temp"];
+
+actual=[d.hr,d.spo2,d.tempC];
+
+normal=[75,98,37];
+
 }
+
 
 
 if(log.type==="Sensors"){
 
-details=`
+html=`
 
-ECG Value: ${log.data.ecgValue}
+ECG: ${d.ecgValue}<br>
 
-Body Temp: ${log.data.bodyTemperature}
+Body Temp: ${d.bodyTemperature}<br>
 
-Accel X: ${log.data.accelX}
+Accel X: ${d.accelX}<br>
 
-Accel Y: ${log.data.accelY}
+Accel Y: ${d.accelY}<br>
 
-Accel Z: ${log.data.accelZ}
+Accel Z: ${d.accelZ}
 
 `;
+
+labels=["Temp"];
+
+actual=[d.bodyTemperature];
+
+normal=[37];
 
 }
 
 
-alert(details);
+
+if(log.type==="Manual"){
+
+html=`
+
+BP: ${d.systolic}/${d.diastolic}<br>
+
+SpO2: ${d.spo2}%<br>
+
+Temp: ${d.temp}°C
+
+`;
+
+labels=["SpO2","Temp"];
+
+actual=[d.spo2,d.temp];
+
+normal=[98,37];
+
+}
+
+
+
+document.getElementById("popupContent").innerHTML=html;
+
+document.getElementById("popup").style.display="flex";
+
+
+drawChart(labels,actual,normal);
+
+}
+
+
+
+function drawChart(labels,actual,normal){
+
+const ctx=document.getElementById("popupChart");
+
+
+if(chart) chart.destroy();
+
+
+chart=new Chart(ctx,{
+
+type:"bar",
+
+data:{
+
+labels:labels,
+
+datasets:[
+
+{
+
+label:"Your Value",
+
+data:actual
+
+},
+
+{
+
+label:"Normal",
+
+data:normal
+
+}
+
+]
+
+}
+
+});
+
+}
+
+
+
+function closePopup(){
+
+document.getElementById("popup").style.display="none";
 
 }
