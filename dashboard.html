@@ -8,66 +8,75 @@
 <link rel="stylesheet" href="css/style.css">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
-<body>
 
-<div class="nav">
+<body class="dashboard">
 
-<div class="logo">
-Health Monitor
-</div>
 
-<button onclick="logout()">Logout</button>
+<!-- NAVBAR WILL LOAD HERE -->
 
-</div>
 
 <div class="container">
 
+
 <h2>Health Overview</h2>
 
+
 <div class="grid">
+
 
 <div class="card">
 <div class="label">Heart Rate</div>
 <div id="hr" class="stat">--</div>
 </div>
 
+
 <div class="card">
-<div class="label">SpO2</div>
+<div class="label">SpO₂</div>
 <div id="spo2" class="stat">--</div>
 </div>
+
 
 <div class="card">
 <div class="label">Temperature</div>
 <div id="temp" class="stat">--</div>
 </div>
 
+
 <div class="card">
 <div class="label">Status</div>
 <div id="status" class="stat">Normal</div>
 </div>
+
 
 <div class="card">
 <div class="label">ECG</div>
 <div id="ecg" class="stat">--</div>
 </div>
 
+
 <div class="card">
 <div class="label">Body Temp</div>
 <div id="bodyTemp" class="stat">--</div>
 </div>
 
+
 <div class="card">
-<div class="label">Acceleration</div>
+<div class="label">Accel</div>
 <div id="accel" class="stat">--</div>
 </div>
 
+
 </div>
+
 
 
 <div class="card chartCard">
@@ -79,9 +88,10 @@ Health Monitor
 </div>
 
 
+
 <div class="card">
 
-<h3>Previous Records</h3>
+<h3>Recent Records</h3>
 
 <div id="records"></div>
 
@@ -91,15 +101,20 @@ Health Monitor
 </div>
 
 
+
 <script src="js/firebase.js"></script>
 
 <script src="js/dashboard.js"></script>
 
 <script src="js/navbar.js"></script>
 
+
 <script>
+
 loadNavbar();
+
 </script>
+
 
 </body>
 
