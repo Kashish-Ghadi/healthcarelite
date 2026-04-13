@@ -5,6 +5,7 @@ firebase.auth().onAuthStateChanged(user=>{
 if(!user){
 
 window.location.href="login.html";
+
 return;
 
 }
@@ -25,7 +26,7 @@ Health Monitor
 
 <a href="emergency.html">Emergency</a>
 
-<a href="record.html">Records</a>
+<a href="records.html">Records</a>
 
 <span class="userEmail">
 ${user.email}
@@ -41,7 +42,7 @@ Logout
 
 `;
 
-document.body.insertAdjacentHTML("afterbegin",navHTML);
+document.body.insertAdjacentHTML("afterbegin", navHTML);
 
 });
 
