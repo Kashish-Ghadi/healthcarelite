@@ -12,65 +12,52 @@ loadAllLogs();
 });
 
 
-
 let chart;
+
+
+
+function parseTime(value){
+
+if(!value) return Date.now();
+
+
+// if seconds convert to ms
+if(value.toString().length<=10){
+
+return value*1000;
+
+}
+
+return value;
+
+}
 
 
 
 function loadAllLogs(){
 
-let allLogs=[];
+let combined=[];
 
 
-// manual
-
-db.ref("manualRecords")
-
-.once("value",snap=>{
-
-const data=snap.val();
-
-if(data){
-
-Object.values(data).forEach(r=>{
-
-allLogs.push({
-
-type:"Manual",
-
-time:r.timestamp,
-
-data:r
-
-});
-
-});
-
-}
-
-});
-
-
-
-// device
+// DEVICE LOGS
 
 db.ref("devices/A4F00F5AC2E8/logs")
 
 .once("value",snap=>{
 
-const data=snap.val();
+const logs=snap.val();
 
-if(data){
+if(logs){
 
-Object.values(data).forEach(r=>{
+Object.values(logs).forEach(l=>{
 
-allLogs.push({
+combined.push({
 
-type:"Vitals",
+source:"device",
 
-time:r.ts_ms,
+time:parseTime(l.ts_ms),
 
-data:r
+data:l
 
 });
 
@@ -82,25 +69,55 @@ data:r
 
 
 
-// sensors
+// SENSOR LOGS
 
 db.ref("health_monitoring")
 
 .once("value",snap=>{
 
-const data=snap.val();
+const logs=snap.val();
 
-if(data){
+if(logs){
 
-Object.values(data).forEach(r=>{
+Object.values(logs).forEach(l=>{
 
-allLogs.push({
+combined.push({
 
-type:"Sensors",
+source:"sensor",
 
-time:r.ts_ms,
+time:parseTime(l.ts_ms),
 
-data:r
+data:l
+
+});
+
+});
+
+}
+
+});
+
+
+
+// MANUAL RECORDS
+
+db.ref("manualRecords")
+
+.once("value",snap=>{
+
+const logs=snap.val();
+
+if(logs){
+
+Object.values(logs).forEach(l=>{
+
+combined.push({
+
+source:"manual",
+
+time:parseTime(l.timestamp),
+
+data:l
 
 });
 
@@ -109,7 +126,7 @@ data:r
 }
 
 
-displayLogs(allLogs);
+showLogs(combined);
 
 });
 
@@ -117,9 +134,9 @@ displayLogs(allLogs);
 
 
 
-function displayLogs(logs){
+function showLogs(list){
 
-logs.sort((a,b)=> b.time-a.time);
+list.sort((a,b)=> b.time-a.time);
 
 
 const container=document.getElementById("records");
@@ -127,23 +144,36 @@ const container=document.getElementById("records");
 container.innerHTML="";
 
 
-logs.forEach((log,index)=>{
+list.forEach((log,i)=>{
 
+const date=new Date(log.time)
 
-const date=new Date(log.time).toLocaleString();
+.toLocaleString("en-IN",{
+
+day:"2-digit",
+
+month:"2-digit",
+
+year:"numeric",
+
+hour:"2-digit",
+
+minute:"2-digit"
+
+});
 
 
 container.innerHTML+=`
 
 <div class="card clickable"
 
-onclick="showDetails(${index})">
+onclick="openPopup(${i})">
 
-<strong>${date}</strong>
+<b>${date}</b>
 
 <br>
 
-${log.type} Record
+${log.source.toUpperCase()} RECORD
 
 </div>
 
@@ -152,31 +182,32 @@ ${log.type} Record
 });
 
 
-window.allLogs=logs;
+window.allLogs=list;
 
 }
 
 
 
-function showDetails(i){
+function openPopup(i){
 
 const log=window.allLogs[i];
 
 const d=log.data;
 
 
-let html=``;
+let html="";
 
+let labels=[];
 
 let actual=[];
 
 let normal=[];
 
-let labels=[];
 
 
+// DEVICE
 
-if(log.type==="Vitals"){
+if(log.source==="device"){
 
 html=`
 
@@ -186,7 +217,9 @@ SpO2: ${d.spo2}%<br>
 
 Temp: ${d.tempC}°C<br>
 
-ECG: ${d.ecgRaw}
+ECG Raw: ${d.ecgRaw}<br>
+
+Fall: ${d.fall}
 
 `;
 
@@ -200,11 +233,13 @@ normal=[75,98,37];
 
 
 
-if(log.type==="Sensors"){
+// SENSOR
+
+if(log.source==="sensor"){
 
 html=`
 
-ECG: ${d.ecgValue}<br>
+ECG Value: ${d.ecgValue}<br>
 
 Body Temp: ${d.bodyTemperature}<br>
 
@@ -216,7 +251,7 @@ Accel Z: ${d.accelZ}
 
 `;
 
-labels=["Temp"];
+labels=["Body Temp"];
 
 actual=[d.bodyTemperature];
 
@@ -226,7 +261,9 @@ normal=[37];
 
 
 
-if(log.type==="Manual"){
+// MANUAL
+
+if(log.source==="manual"){
 
 html=`
 
@@ -234,7 +271,9 @@ BP: ${d.systolic}/${d.diastolic}<br>
 
 SpO2: ${d.spo2}%<br>
 
-Temp: ${d.temp}°C
+Temp: ${d.temp}°C<br>
+
+Notes: ${d.notes}
 
 `;
 
@@ -294,6 +333,18 @@ data:normal
 }
 
 ]
+
+},
+
+options:{
+
+responsive:true,
+
+plugins:{
+
+legend:{position:"bottom"}
+
+}
 
 }
 
