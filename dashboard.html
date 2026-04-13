@@ -1,242 +1,123 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
-
-<meta charset="UTF-8">
 
 <title>Health Dashboard</title>
 
 <link rel="stylesheet" href="css/style.css">
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 
-<!-- Chart -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- JS files -->
-<script src="js/firebase.js"></script>
-<script defer src="js/dashboard.js"></script>
 
 </head>
 
+
 <body>
-
-<!-- NAVBAR -->
-
-<div class="nav">
-
-<div class="logo">
-❤ Health Dashboard
-</div>
-
-<div>
-
-<a href="dashboard.html" style="margin-right:20px">
-Dashboard
-</a>
-
-<a href="emergency.html">
-Emergency Contacts
-</a>
-
-</div>
-
-</div>
-
-
-<!-- PAGE -->
 
 <div class="container">
 
-<h2 class="title">
 
-Health Overview
+<h1>Health Dashboard</h1>
 
-</h2>
-
-
-<!-- QUICK ACTIONS -->
-
-<div class="card" style="margin-bottom:25px">
-
-<h3>
-
-Quick Actions
-
-</h3>
-
-<button onclick="location.href='add-record.html'" class="primaryBtn">
-
-Add New Record
-
-</button>
-
-<button onclick="location.href='emergency.html'" class="primaryBtn" style="margin-top:10px">
-
-Emergency Contacts
-
-</button>
-
-</div>
-
-
-<!-- HEALTH CARDS -->
 
 <div class="grid">
 
 
 <div class="card">
 
-<h4>
+<h3>Heart Rate</h3>
 
-Heart Rate
-
-</h4>
-
-<div id="hr" class="stat">
-
---
-
-</div>
+<div id="hr" class="stat">--</div>
 
 </div>
 
 
 <div class="card">
 
-<h4>
+<h3>SpO2</h3>
 
-SpO2
-
-</h4>
-
-<div id="spo2" class="stat">
-
---
-
-</div>
+<div id="spo2" class="stat">--</div>
 
 </div>
 
 
 <div class="card">
 
-<h4>
+<h3>Temperature</h3>
 
-Temperature
-
-</h4>
-
-<div id="temp" class="stat">
-
---
-
-</div>
+<div id="temp" class="stat">--</div>
 
 </div>
 
 
 <div class="card">
 
-<h4>
+<h3>Status</h3>
 
-Fall Detection
-
-</h4>
-
-<div id="fall" class="stat">
-
-No
-
-</div>
+<div id="status" class="stat">Normal</div>
 
 </div>
 
 
-</div>
+<div class="card">
 
+<h3>ECG</h3>
 
-
-<!-- GRAPH -->
-
-<div class="chartCard">
-
-<h3>
-
-Health Trends
-
-</h3>
-
-<canvas id="chart">
-
-</canvas>
+<div id="ecg" class="stat">--</div>
 
 </div>
 
 
+<div class="card">
 
-<!-- RECENT DATA -->
+<h3>Body Temp</h3>
 
-<div class="card" style="margin-top:25px">
+<div id="bodyTemp" class="stat">--</div>
 
-<h3>
+</div>
 
-Latest Sensor Data
 
-</h3>
+<div class="card">
 
-<p>
+<h3>Accel</h3>
 
-Heart Rate:
-<span id="hrText">
-
---
-
-</span>
-
-</p>
-
-<p>
-
-SpO2:
-<span id="spo2Text">
-
---
-
-</span>
-
-</p>
-
-<p>
-
-Temperature:
-<span id="tempText">
-
---
-
-</span>
-
-</p>
-
-<p>
-
-Fall:
-<span id="fallText">
-
---
-
-</span>
-
-</p>
+<div id="accel" class="stat">--</div>
 
 </div>
 
 
 </div>
 
+
+<div class="card chartCard">
+
+<h3>Health Trends</h3>
+
+<canvas id="chart"></canvas>
+
+</div>
+
+
+<div class="card">
+
+<h3>Previous Records</h3>
+
+<div id="records"></div>
+
+</div>
+
+
+</div>
+
+
+<script src="js/firebase.js"></script>
+
+<script src="js/dashboard.js"></script>
 
 
 </body>
