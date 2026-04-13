@@ -2,49 +2,33 @@ const deviceId = "A4F00F5AC2E8";
 
 let chart;
 
-/* DATABASE PATHS */
-
-const latestRef =
-firebase.database().ref(
-"devices/"+deviceId+"/latest"
-);
-
-const logsRef =
-firebase.database().ref(
-"devices/"+deviceId+"/logs"
-);
-
-const healthRef =
-firebase.database().ref(
-"health_monitoring"
-);
+const db = firebase.database();
 
 
+/* -------- LATEST SENSOR DATA -------- */
 
-/* LOAD LATEST SENSOR VALUES */
+db.ref("devices/"+deviceId+"/latest")
+.on("value", snap => {
 
-latestRef.on("value", snap => {
+const d = snap.val();
 
-const data = snap.val();
+console.log("latest:", d);
 
-console.log("LATEST:", data);
-
-if(!data) return;
+if(!d) return;
 
 document.getElementById("hr").innerText =
-data.hr ?? "--";
+Math.round(d.hr);
 
 document.getElementById("spo2").innerText =
-data.spo2 ?? "--";
+d.spo2 + " %";
 
 document.getElementById("temp").innerText =
-data.tempC ?? "--";
+d.tempC + " °C";
 
 document.getElementById("ecg").innerText =
-data.ecgRaw ?? "--";
+d.ecgRaw;
 
-
-if(data.fall){
+if(d.fall){
 
 document.getElementById("status").innerText =
 "Fall Detected";
@@ -66,13 +50,15 @@ document.getElementById("status").style.color =
 
 
 
-/* LOAD BODY TEMP + ACCEL */
+/* -------- BODY TEMP + ACCEL -------- */
 
-healthRef.limitToLast(1).on("value", snap => {
+db.ref("health_monitoring")
+.limitToLast(1)
+.on("value", snap => {
 
 const data = snap.val();
 
-console.log("HEALTH:", data);
+console.log("health:", data);
 
 if(!data) return;
 
@@ -80,13 +66,13 @@ const latest =
 Object.values(data)[0];
 
 document.getElementById("bodyTemp").innerText =
-latest.bodyTemperature ?? "--";
+latest.bodyTemperature + " °C";
 
 const accel = Math.sqrt(
 
-(latest.accelX ?? 0)**2 +
-(latest.accelY ?? 0)**2 +
-(latest.accelZ ?? 0)**2
+latest.accelX**2 +
+latest.accelY**2 +
+latest.accelZ**2
 
 ).toFixed(2);
 
@@ -97,13 +83,15 @@ accel;
 
 
 
-/* LOAD GRAPH */
+/* -------- GRAPH -------- */
 
-logsRef.limitToLast(10).on("value", snap => {
+db.ref("devices/"+deviceId+"/logs")
+.limitToLast(10)
+.on("value", snap => {
 
 const logs = snap.val();
 
-console.log("LOGS:", logs);
+console.log("logs:", logs);
 
 if(!logs) return;
 
@@ -112,15 +100,16 @@ const hr=[];
 const spo2=[];
 const temp=[];
 
-Object.values(logs).forEach(item => {
+Object.values(logs).forEach(l=>{
 
 labels.push(
-new Date(item.ts_ms).toLocaleTimeString()
+new Date(l.ts_ms)
+.toLocaleTimeString()
 );
 
-hr.push(item.hr);
-spo2.push(item.spo2);
-temp.push(item.tempC);
+hr.push(l.hr);
+spo2.push(l.spo2);
+temp.push(l.tempC);
 
 });
 
@@ -130,40 +119,42 @@ drawChart(labels, hr, spo2, temp);
 
 
 
-/* LOAD PREVIOUS RECORDS */
+/* -------- PREVIOUS RECORDS -------- */
 
-logsRef.limitToLast(5).on("value", snap => {
+db.ref("devices/"+deviceId+"/logs")
+.limitToLast(5)
+.on("value", snap => {
 
 const logs = snap.val();
 
-const container =
+const div =
 document.getElementById("records");
 
-container.innerHTML="";
+div.innerHTML="";
 
 if(!logs) return;
 
 Object.values(logs)
 .reverse()
-.forEach(item => {
+.forEach(r=>{
 
-container.innerHTML += `
+div.innerHTML += `
 
-<div class="recordItem">
+<div class="record">
 
-${new Date(item.ts_ms).toLocaleString()}
+${new Date(r.ts_ms).toLocaleString()}
 
 <br>
 
-HR: ${item.hr}
+HR: ${r.hr}
 
 |
 
-SpO2: ${item.spo2}
+SpO2: ${r.spo2}
 
 |
 
-Temp: ${item.tempC}
+Temp: ${r.tempC}
 
 </div>
 
@@ -175,7 +166,7 @@ Temp: ${item.tempC}
 
 
 
-/* DRAW CHART */
+/* -------- CHART -------- */
 
 function drawChart(
 
@@ -191,29 +182,29 @@ document.getElementById("chart");
 
 if(chart) chart.destroy();
 
-chart = new Chart(ctx, {
+chart = new Chart(ctx,{
 
-type: "line",
+type:"line",
 
-data: {
+data:{
 
-labels: labels,
+labels:labels,
 
-datasets: [
+datasets:[
 
 {
-label: "Heart Rate",
-data: hr
+label:"Heart Rate",
+data:hr
 },
 
 {
-label: "SpO2",
-data: spo2
+label:"SpO2",
+data:spo2
 },
 
 {
-label: "Temperature",
-data: temp
+label:"Temperature",
+data:temp
 }
 
 ]
@@ -221,16 +212,5 @@ data: temp
 }
 
 });
-
-}
-
-
-
-/* LOGOUT */
-
-function logout(){
-
-window.location.href =
-"login.html";
 
 }
