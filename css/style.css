@@ -122,3 +122,34 @@ margin-bottom:14px;
 border-radius:8px;
 border:1px solid #ddd;
 }
+
+.menu{
+display:flex;
+gap:20px;
+align-items:center;
+}
+
+.menu a{
+text-decoration:none;
+color:#333;
+font-weight:500;
+}
+
+.menu a:hover{
+color:#1976d2;
+}
+
+.logoutBtn{
+padding:6px 14px;
+border:none;
+background:#1976d2;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+.userEmail{
+font-size:14px;
+color:#666;
+margin-right:10px;
+}

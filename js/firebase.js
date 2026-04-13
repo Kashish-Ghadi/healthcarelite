@@ -8,7 +8,7 @@ databaseURL: "https://healthmonitoring-e9876-default-rtdb.firebaseio.com",
 
 projectId: "healthmonitoring-e9876",
 
-storageBucket: "healthmonitoring-e9876.firebasestorage.app",
+storageBucket: "healthmonitoring-e9876.appspot.com",
 
 messagingSenderId: "662687659674",
 
@@ -19,3 +19,5 @@ appId: "1:662687659674:web:e489d32d61f0b61eb09123"
 firebase.initializeApp(firebaseConfig);
 
 const db = firebase.database();
+
+const auth = firebase.auth();
