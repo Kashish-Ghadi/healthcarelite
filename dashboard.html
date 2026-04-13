@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
@@ -9,7 +8,7 @@
 <link rel="stylesheet" href="css/style.css">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,20 +18,16 @@
 
 <body class="dashboard">
 
+<!-- top bar -->
 
 <div class="nav">
 
 <div class="logo">
-
 Health Dashboard
-
 </div>
 
-
 <button onclick="logout()">
-
 Logout
-
 </button>
 
 </div>
@@ -42,173 +37,111 @@ Logout
 <div class="container">
 
 
-<h2>
+<!-- quick actions -->
 
-Health Overview
+<div class="quickActions">
 
-</h2>
+<button class="primaryBtn"
+onclick="location.href='add-record.html'">
+
++ Add New Record
+
+</button>
 
 
+<button
+onclick="location.href='emergency.html'">
+
+Emergency Contacts
+
+</button>
+
+
+<button
+onclick="location.href='records.html'">
+
+View All Records
+
+</button>
+
+</div>
+
+
+
+<h2>Health Overview</h2>
+
+
+
+<!-- cards -->
 
 <div class="grid">
 
 
 <div class="card">
-
-<div class="label">
-
-Heart Rate
-
+<div class="label">Heart Rate</div>
+<div id="hr" class="stat">--</div>
 </div>
-
-<div id="hr" class="stat">
-
---
-
-</div>
-
-</div>
-
 
 
 <div class="card">
-
-<div class="label">
-
-SpO₂
-
+<div class="label">SpO₂</div>
+<div id="spo2" class="stat">--</div>
 </div>
-
-<div id="spo2" class="stat">
-
---
-
-</div>
-
-</div>
-
 
 
 <div class="card">
-
-<div class="label">
-
-Temperature
-
+<div class="label">Temperature</div>
+<div id="temp" class="stat">--</div>
 </div>
-
-<div id="temp" class="stat">
-
---
-
-</div>
-
-</div>
-
 
 
 <div class="card">
-
-<div class="label">
-
-Status
-
+<div class="label">Status</div>
+<div id="status" class="stat">Normal</div>
 </div>
-
-<div id="status" class="stat">
-
-Normal
-
-</div>
-
-</div>
-
 
 
 <div class="card">
-
-<div class="label">
-
-ECG
-
+<div class="label">ECG</div>
+<div id="ecg" class="stat">--</div>
 </div>
-
-<div id="ecg" class="stat">
-
---
-
-</div>
-
-</div>
-
 
 
 <div class="card">
-
-<div class="label">
-
-Body Temp
-
+<div class="label">Body Temp</div>
+<div id="bodyTemp" class="stat">--</div>
 </div>
-
-<div id="bodyTemp" class="stat">
-
---
-
-</div>
-
-</div>
-
 
 
 <div class="card">
-
-<div class="label">
-
-Accel
-
-</div>
-
-<div id="accel" class="stat">
-
---
-
-</div>
-
+<div class="label">Acceleration</div>
+<div id="accel" class="stat">--</div>
 </div>
 
 
 </div>
 
 
+
+<!-- graph -->
 
 <div class="card chartCard">
 
-<h3>
+<h3>Health Trends</h3>
 
-Health Trends
-
-</h3>
-
-<canvas id="chart">
-
-</canvas>
+<canvas id="chart"></canvas>
 
 </div>
 
 
+
+<!-- records -->
 
 <div class="card">
 
-<h3>
+<h3>Recent Records</h3>
 
-Recent Records
-
-</h3>
-
-<div id="records">
-
-</div>
+<div id="records"></div>
 
 </div>
 
@@ -218,9 +151,7 @@ Recent Records
 
 
 <script src="js/firebase.js"></script>
-
 <script src="js/dashboard.js"></script>
-
 
 </body>
 
