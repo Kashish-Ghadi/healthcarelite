@@ -15,49 +15,39 @@ loadAllLogs();
 let chart;
 
 
+function fixTime(t){
 
-function parseTime(value){
+if(!t) return Date.now();
 
-if(!value) return Date.now();
+if(t.toString().length<=10) return t*1000;
 
-
-// if seconds convert to ms
-if(value.toString().length<=10){
-
-return value*1000;
+return t;
 
 }
-
-return value;
-
-}
-
 
 
 function loadAllLogs(){
 
-let combined=[];
+let all=[];
 
 
-// DEVICE LOGS
+// device logs
 
-db.ref("devices/A4F00F5AC2E8/logs")
+db.ref("devices/A4F00F5AC2E8/logs").once("value",snap=>{
 
-.once("value",snap=>{
+let data=snap.val();
 
-const logs=snap.val();
+if(data){
 
-if(logs){
+Object.values(data).forEach(r=>{
 
-Object.values(logs).forEach(l=>{
+all.push({
 
-combined.push({
+time:fixTime(r.ts_ms),
 
-source:"device",
+data:r,
 
-time:parseTime(l.ts_ms),
-
-data:l
+type:"device"
 
 });
 
@@ -68,26 +58,23 @@ data:l
 });
 
 
+// sensor logs
 
-// SENSOR LOGS
+db.ref("health_monitoring").once("value",snap=>{
 
-db.ref("health_monitoring")
+let data=snap.val();
 
-.once("value",snap=>{
+if(data){
 
-const logs=snap.val();
+Object.values(data).forEach(r=>{
 
-if(logs){
+all.push({
 
-Object.values(logs).forEach(l=>{
+time:fixTime(r.ts_ms),
 
-combined.push({
+data:r,
 
-source:"sensor",
-
-time:parseTime(l.ts_ms),
-
-data:l
+type:"sensor"
 
 });
 
@@ -98,26 +85,23 @@ data:l
 });
 
 
+// manual
 
-// MANUAL RECORDS
+db.ref("manualRecords").once("value",snap=>{
 
-db.ref("manualRecords")
+let data=snap.val();
 
-.once("value",snap=>{
+if(data){
 
-const logs=snap.val();
+Object.values(data).forEach(r=>{
 
-if(logs){
+all.push({
 
-Object.values(logs).forEach(l=>{
+time:fixTime(r.timestamp),
 
-combined.push({
+data:r,
 
-source:"manual",
-
-time:parseTime(l.timestamp),
-
-data:l
+type:"manual"
 
 });
 
@@ -126,54 +110,39 @@ data:l
 }
 
 
-showLogs(combined);
+display(all);
 
 });
 
 }
 
 
+function display(arr){
 
-function showLogs(list){
+arr.sort((a,b)=>b.time-a.time);
 
-list.sort((a,b)=> b.time-a.time);
-
-
-const container=document.getElementById("records");
-
-container.innerHTML="";
+window.logs=arr;
 
 
-list.forEach((log,i)=>{
+let html="";
 
-const date=new Date(log.time)
+arr.forEach((r,i)=>{
 
-.toLocaleString("en-IN",{
-
-day:"2-digit",
-
-month:"2-digit",
-
-year:"numeric",
-
-hour:"2-digit",
-
-minute:"2-digit"
-
-});
-
-
-container.innerHTML+=`
+html+=`
 
 <div class="card clickable"
 
-onclick="openPopup(${i})">
+onclick="openLog(${i})">
 
-<b>${date}</b>
+<b>
+
+${new Date(r.time).toLocaleString("en-IN")}
+
+</b>
 
 <br>
 
-${log.source.toUpperCase()} RECORD
+${r.type.toUpperCase()} RECORD
 
 </div>
 
@@ -182,131 +151,161 @@ ${log.source.toUpperCase()} RECORD
 });
 
 
-window.allLogs=list;
+document.getElementById("records").innerHTML=html;
 
 }
 
 
 
-function openPopup(i){
+function openLog(i){
 
-const log=window.allLogs[i];
+let r=logs[i];
 
-const d=log.data;
+let d=r.data;
 
-
-let html="";
 
 let labels=[];
 
-let actual=[];
+let values=[];
 
 let normal=[];
 
+let info="";
 
 
-// DEVICE
+// HEART RATE
 
-if(log.source==="device"){
+if(d.hr){
 
-html=`
+labels.push("Heart Rate");
 
-Heart Rate: ${d.hr}<br>
+values.push(d.hr);
 
-SpO2: ${d.spo2}%<br>
+normal.push(75);
 
-Temp: ${d.tempC}°C<br>
-
-ECG Raw: ${d.ecgRaw}<br>
-
-Fall: ${d.fall}
-
-`;
-
-labels=["HR","SpO2","Temp"];
-
-actual=[d.hr,d.spo2,d.tempC];
-
-normal=[75,98,37];
+info+=`Heart Rate: ${d.hr}<br>`;
 
 }
 
 
+// SPO2
 
-// SENSOR
+if(d.spo2){
 
-if(log.source==="sensor"){
+labels.push("SpO2");
 
-html=`
+values.push(d.spo2);
 
-ECG Value: ${d.ecgValue}<br>
+normal.push(98);
 
-Body Temp: ${d.bodyTemperature}<br>
-
-Accel X: ${d.accelX}<br>
-
-Accel Y: ${d.accelY}<br>
-
-Accel Z: ${d.accelZ}
-
-`;
-
-labels=["Body Temp"];
-
-actual=[d.bodyTemperature];
-
-normal=[37];
+info+=`SpO2: ${d.spo2}%<br>`;
 
 }
 
 
+// TEMP C
 
-// MANUAL
+if(d.tempC){
 
-if(log.source==="manual"){
+labels.push("Temp °C");
 
-html=`
+values.push(d.tempC);
 
-BP: ${d.systolic}/${d.diastolic}<br>
+normal.push(37);
 
-SpO2: ${d.spo2}%<br>
-
-Temp: ${d.temp}°C<br>
-
-Notes: ${d.notes}
-
-`;
-
-labels=["SpO2","Temp"];
-
-actual=[d.spo2,d.temp];
-
-normal=[98,37];
+info+=`Temp: ${d.tempC}°C<br>`;
 
 }
 
 
+// BODY TEMP
 
-document.getElementById("popupContent").innerHTML=html;
+if(d.bodyTemperature){
+
+labels.push("Body Temp");
+
+values.push(d.bodyTemperature);
+
+normal.push(37);
+
+info+=`Body Temp: ${d.bodyTemperature}<br>`;
+
+}
+
+
+// ECG
+
+if(d.ecgValue){
+
+info+=`ECG: ${d.ecgValue}<br>`;
+
+}
+
+
+// BP
+
+if(d.systolic){
+
+info+=`BP: ${d.systolic}/${d.diastolic}<br>`;
+
+}
+
+
+// ACCEL
+
+if(d.accelX){
+
+let magnitude=Math.sqrt(
+
+d.accelX*d.accelX+
+
+d.accelY*d.accelY+
+
+d.accelZ*d.accelZ
+
+).toFixed(2);
+
+labels.push("Accel");
+
+values.push(magnitude);
+
+normal.push(9.8);
+
+info+=`Accel magnitude: ${magnitude}<br>`;
+
+}
+
+
+// FALL
+
+if(d.fall){
+
+info+=`Fall detected<br>`;
+
+}
+
+
+document.getElementById("popupContent").innerHTML=info;
 
 document.getElementById("popup").style.display="flex";
 
 
-drawChart(labels,actual,normal);
+draw(labels,values,normal);
 
 }
 
 
 
-function drawChart(labels,actual,normal){
-
-const ctx=document.getElementById("popupChart");
-
+function draw(labels,data,normal){
 
 if(chart) chart.destroy();
 
 
-chart=new Chart(ctx,{
+chart=new Chart(
+
+document.getElementById("popupChart"),
+
+{
 
 type:"bar",
 
@@ -320,7 +319,7 @@ datasets:[
 
 label:"Your Value",
 
-data:actual
+data:data
 
 },
 
@@ -333,18 +332,6 @@ data:normal
 }
 
 ]
-
-},
-
-options:{
-
-responsive:true,
-
-plugins:{
-
-legend:{position:"bottom"}
-
-}
 
 }
 
