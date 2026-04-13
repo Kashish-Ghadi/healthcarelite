@@ -2,14 +2,16 @@ let chart;
 
 const deviceId = "A4F00F5AC2E8";
 
-/* arrays for graph */
+
+/* arrays */
+
 let hrData=[];
 let spo2Data=[];
 let tempData=[];
 let labels=[];
 
 
-/* ---------------- LIVE DATA (devices/latest) ---------------- */
+/* ---------------- LIVE DATA ---------------- */
 
 function listenLive(){
 
@@ -23,35 +25,46 @@ const d=snap.val();
 if(!d) return;
 
 
-/* main vitals */
+/* update UI */
 
-document.getElementById("hr").innerText =
-d.hr ? Math.round(d.hr) : "--";
-
-document.getElementById("spo2").innerText =
-d.spo2 ? d.spo2+"%" : "--";
-
-document.getElementById("temp").innerText =
-d.tempC ? d.tempC+"°C" : "--";
+document.getElementById("hr")
+.innerText = d.hr
+? Math.round(d.hr)
+: "--";
 
 
-/* status */
+document.getElementById("spo2")
+.innerText = d.spo2
+? d.spo2 + "%"
+: "--";
+
+
+document.getElementById("temp")
+.innerText = d.tempC
+? d.tempC + "°C"
+: "--";
+
+
+/* fall detection */
 
 if(d.fall){
 
-document.getElementById("status").innerText =
-"Fall detected";
+document.getElementById("status")
+.innerText = "Check Required";
 
-document.getElementById("status").style.color="red";
+document.getElementById("status")
+.style.color = "red";
 
 showAlert();
 
 }
 else{
 
-document.getElementById("status").innerText="Normal";
+document.getElementById("status")
+.innerText = "Normal";
 
-document.getElementById("status").style.color="green";
+document.getElementById("status")
+.style.color = "green";
 
 }
 
@@ -60,14 +73,14 @@ document.getElementById("status").style.color="green";
 }
 
 
-/* ---------------- GRAPH DATA (devices/logs) ---------------- */
+/* ---------------- GRAPH ---------------- */
 
 function loadGraph(){
 
 const logsRef =
 db.ref("devices/"+deviceId+"/logs");
 
-logsRef.limitToLast(20)
+logsRef.limitToLast(15)
 .on("value", snap=>{
 
 const logs=snap.val();
@@ -81,11 +94,11 @@ tempData=[];
 labels=[];
 
 
-const entries=
+const entries =
 Object.entries(logs);
 
 
-/* sort by timestamp */
+/* sort */
 
 entries.sort((a,b)=>{
 
@@ -98,11 +111,12 @@ entries.forEach(item=>{
 
 const r=item[1];
 
-hrData.push(Number(r.hr||0));
+hrData.push(Number(r.hr || 0));
 
-spo2Data.push(Number(r.spo2||0));
+spo2Data.push(Number(r.spo2 || 0));
 
-tempData.push(Number(r.tempC||0));
+tempData.push(Number(r.tempC || 0));
+
 
 labels.push(
 
@@ -115,6 +129,7 @@ new Date(r.ts_ms)
 
 
 drawChart();
+
 showRecords(entries);
 
 });
@@ -122,9 +137,9 @@ showRecords(entries);
 }
 
 
-/* ---------------- EXTRA DATA (health_monitoring) ---------------- */
+/* ---------------- EXTRA SENSOR ---------------- */
 
-function loadExtraSensors(){
+function loadExtra(){
 
 const ref =
 db.ref("health_monitoring");
@@ -137,39 +152,44 @@ const data=snap.val();
 if(!data) return;
 
 
-const latestKey =
+const key=
 Object.keys(data)[0];
 
-const d=data[latestKey];
+const d=data[key];
 
 
-/* display extra sensors */
+/* update UI */
 
 document.getElementById("ecg")
-.innerText=d.ecgValue || "--";
+.innerText = d.ecgValue || "--";
+
 
 document.getElementById("bodyTemp")
-.innerText=d.bodyTemperature || "--";
+.innerText =
+d.bodyTemperature || "--";
+
 
 document.getElementById("accel")
-.innerText=
-Number(d.accelX||0).toFixed(1);
+.innerText =
+Number(d.accelX || 0)
+.toFixed(1);
 
 });
 
 }
 
 
-/* ---------------- DRAW GRAPH ---------------- */
+/* ---------------- CHART ---------------- */
 
 function drawChart(){
 
-const ctx=
+const ctx =
 document.getElementById("chart");
 
 if(chart) chart.destroy();
 
-chart=new Chart(ctx,{
+chart =
+new Chart(ctx,{
 
 type:"line",
 
@@ -202,7 +222,13 @@ borderWidth:2
 },
 
 options:{
-responsive:true
+
+plugins:{
+legend:{
+position:"bottom"
+}
+}
+
 }
 
 });
@@ -224,31 +250,33 @@ entries.reverse().forEach(item=>{
 
 const r=item[1];
 
-const div=document
-.createElement("div");
+const div =
+document.createElement("div");
 
-div.className="recordCard";
+div.className="recordItem";
 
-div.innerHTML=`
 
-<div class="recordRow">
+div.innerHTML = `
 
-<b>
+<div>
+
 ${new Date(r.ts_ms)
 .toLocaleString()}
-</b>
 
-<br>
+</div>
 
-HR: ${Math.round(r.hr)}
+<div>
 
-|
-
-SpO2: ${r.spo2}%
+HR:
+${Math.round(r.hr)}
 
 |
+SpO2:
+${r.spo2}%
 
-Temp: ${r.tempC}°C
+|
+Temp:
+${r.tempC}°C
 
 </div>
 
@@ -265,7 +293,7 @@ container.appendChild(div);
 
 function showAlert(){
 
-alert("⚠ FALL DETECTED");
+alert("⚠ Fall detected");
 
 }
 
@@ -276,4 +304,4 @@ listenLive();
 
 loadGraph();
 
-loadExtraSensors();
+loadExtra();
