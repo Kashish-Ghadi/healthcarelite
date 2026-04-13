@@ -1,6 +1,8 @@
+const deviceId = "A4F00F5AC2E8";
+
 let chart;
 
-const deviceId = "A4F00F5AC2E8";
+/* REFERENCES */
 
 const latestRef =
 db.ref("devices/"+deviceId+"/latest");
@@ -11,69 +13,91 @@ db.ref("devices/"+deviceId+"/logs");
 const healthRef =
 db.ref("health_monitoring");
 
+/* LIVE SENSOR VALUES */
 
-let hrData=[];
-let spo2Data=[];
-let tempData=[];
-let labels=[];
+latestRef.on("value", snap => {
 
-
-
-/* LIVE DATA */
-
-latestRef.on("value",snap=>{
-
-const d=snap.val();
+const d = snap.val();
 
 if(!d) return;
 
-document.getElementById("hr").innerText=
-Math.round(d.hr);
+document.getElementById("hr").innerText =
+d.hr || "--";
 
-document.getElementById("spo2").innerText=
-d.spo2+"%";
+document.getElementById("spo2").innerText =
+d.spo2 ? d.spo2+"%" : "--";
 
-document.getElementById("temp").innerText=
-d.tempC+"°C";
+document.getElementById("temp").innerText =
+d.tempC ? d.tempC+"°C" : "--";
 
-document.getElementById("ecg").innerText=
-d.ecgRaw;
+document.getElementById("ecg").innerText =
+d.ecgRaw || "--";
 
 if(d.fall){
 
-document.getElementById("status").innerText=
+document.getElementById("status").innerText =
 "Fall Detected";
 
-document.getElementById("status").style.color="red";
-
-alert("⚠ FALL DETECTED");
+document.getElementById("status").style.color =
+"red";
 
 }
 else{
 
-document.getElementById("status").innerText=
+document.getElementById("status").innerText =
 "Normal";
 
-document.getElementById("status").style.color="green";
+document.getElementById("status").style.color =
+"green";
 
 }
 
 });
 
+/* BODY TEMP + ACCEL DATA */
 
+healthRef.limitToLast(1).on("value", snap => {
 
-/* LOG GRAPH */
+const data = snap.val();
 
-logsRef.limitToLast(10).on("value",snap=>{
+if(!data) return;
 
-const logs=snap.val();
+const latest =
+Object.values(data)[0];
+
+document.getElementById("bodyTemp").innerText =
+latest.bodyTemperature
+? latest.bodyTemperature+"°C"
+: "--";
+
+const accel =
+Math.sqrt(
+
+latest.accelX**2 +
+
+latest.accelY**2 +
+
+latest.accelZ**2
+
+).toFixed(2);
+
+document.getElementById("accel").innerText =
+accel;
+
+});
+
+/* GRAPH */
+
+logsRef.limitToLast(10).on("value", snap => {
+
+const logs = snap.val();
 
 if(!logs) return;
 
-hrData=[];
-spo2Data=[];
-tempData=[];
-labels=[];
+const hrData=[];
+const spo2Data=[];
+const tempData=[];
+const labels=[];
 
 Object.values(logs).forEach(l=>{
 
@@ -84,59 +108,45 @@ spo2Data.push(l.spo2);
 tempData.push(l.tempC);
 
 labels.push(
+
 new Date(l.ts_ms).toLocaleTimeString()
-);
-
-});
-
-drawChart();
-
-});
-
-
-
-/* BODY TEMP + ACCEL */
-
-healthRef.limitToLast(1).on("value",snap=>{
-
-const data=snap.val();
-
-if(!data) return;
-
-const latest=Object.values(data)[0];
-
-document.getElementById("bodyTemp").innerText=
-latest.bodyTemperature+"°C";
-
-document.getElementById("accel").innerText=
-
-Math.round(
-
-Math.sqrt(
-latest.accelX**2+
-latest.accelY**2+
-latest.accelZ**2
-)
 
 );
 
 });
 
+drawChart(
 
+labels,
+
+hrData,
+
+spo2Data,
+
+tempData
+
+);
+
+});
 
 /* RECORD LIST */
 
-logsRef.limitToLast(5).on("value",snap=>{
+logsRef.limitToLast(5).on("value", snap => {
 
-const logs=snap.val();
+const logs = snap.val();
 
-const div=document.getElementById("records");
+const div =
+document.getElementById("records");
 
 div.innerHTML="";
 
 if(!logs) return;
 
-Object.values(logs).reverse().forEach(l=>{
+Object.values(logs)
+
+.reverse()
+
+.forEach(l=>{
 
 div.innerHTML+=`
 
@@ -144,11 +154,15 @@ div.innerHTML+=`
 
 ${new Date(l.ts_ms).toLocaleString()}<br>
 
-HR ${l.hr}
+HR: ${l.hr}
+
 |
-SpO2 ${l.spo2}
+
+SpO2: ${l.spo2}
+
 |
-Temp ${l.tempC}
+
+Temp: ${l.tempC}
 
 </div>
 
@@ -158,17 +172,27 @@ Temp ${l.tempC}
 
 });
 
+/* CHART FUNCTION */
 
+function drawChart(
 
-/* CHART */
+labels,
 
-function drawChart(){
+hr,
 
-const ctx=document.getElementById("chart");
+spo2,
+
+temp
+
+){
+
+const ctx =
+document.getElementById("chart");
 
 if(chart) chart.destroy();
 
-chart=new Chart(ctx,{
+chart =
+new Chart(ctx,{
 
 type:"line",
 
@@ -179,18 +203,27 @@ labels:labels,
 datasets:[
 
 {
+
 label:"Heart Rate",
-data:hrData
+
+data:hr
+
 },
 
 {
+
 label:"SpO2",
-data:spo2Data
+
+data:spo2
+
 },
 
 {
-label:"Temp",
-data:tempData
+
+label:"Temperature",
+
+data:temp
+
 }
 
 ]
@@ -201,7 +234,7 @@ data:tempData
 
 }
 
-
+/* LOGOUT */
 
 function logout(){
 
