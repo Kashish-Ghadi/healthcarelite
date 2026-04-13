@@ -2,69 +2,58 @@ let chart;
 
 const deviceId = "A4F00F5AC2E8";
 
-
-/* arrays */
-
-let hrData=[];
+/* graph arrays */
+let bpData=[];
 let spo2Data=[];
 let tempData=[];
 let labels=[];
 
 
-/* ---------------- LIVE DATA ---------------- */
+/* ---------------- LIVE SENSOR DATA ---------------- */
 
-function listenLive(){
+function loadLiveData(){
 
 const ref =
-db.ref("devices/"+deviceId+"/latest");
+firebase.database()
+.ref("devices/"+deviceId+"/latest");
 
-ref.on("value", snap=>{
+ref.on("value", snapshot => {
 
-const d=snap.val();
+const d = snapshot.val();
 
 if(!d) return;
 
 
-/* update UI */
+/* update cards */
 
-document.getElementById("hr")
-.innerText = d.hr
-? Math.round(d.hr)
-: "--";
-
-
-document.getElementById("spo2")
-.innerText = d.spo2
-? d.spo2 + "%"
-: "--";
+document.querySelector("#spo2Stat")
+.innerText =
+Math.round(d.spo2 || 0) + " %";
 
 
-document.getElementById("temp")
-.innerText = d.tempC
-? d.tempC + "°C"
-: "--";
+document.querySelector("#tempStat")
+.innerText =
+(d.tempC || 0) + " °C";
 
 
-/* fall detection */
+/* status */
 
 if(d.fall){
 
-document.getElementById("status")
+document.querySelector("#statusStat")
 .innerText = "Check Required";
 
-document.getElementById("status")
-.style.color = "red";
-
-showAlert();
+document.querySelector("#statusStat")
+.style.color="red";
 
 }
 else{
 
-document.getElementById("status")
+document.querySelector("#statusStat")
 .innerText = "Normal";
 
-document.getElementById("status")
-.style.color = "green";
+document.querySelector("#statusStat")
+.style.color="green";
 
 }
 
@@ -73,32 +62,37 @@ document.getElementById("status")
 }
 
 
-/* ---------------- GRAPH ---------------- */
+/* ---------------- LOAD GRAPH FROM ESP LOGS ---------------- */
 
 function loadGraph(){
 
 const logsRef =
-db.ref("devices/"+deviceId+"/logs");
+firebase.database()
+.ref("devices/"+deviceId+"/logs");
 
-logsRef.limitToLast(15)
-.on("value", snap=>{
+logsRef.limitToLast(10)
+.on("value", snapshot => {
 
-const logs=snap.val();
+const logs = snapshot.val();
 
 if(!logs) return;
 
 
-hrData=[];
+/* reset arrays */
+
+bpData=[];
 spo2Data=[];
 tempData=[];
 labels=[];
 
 
+/* convert object → array */
+
 const entries =
 Object.entries(logs);
 
 
-/* sort */
+/* sort by timestamp */
 
 entries.sort((a,b)=>{
 
@@ -107,22 +101,31 @@ return a[1].ts_ms - b[1].ts_ms;
 });
 
 
-entries.forEach(item=>{
+entries.forEach(item => {
 
-const r=item[1];
+const r = item[1];
 
-hrData.push(Number(r.hr || 0));
 
-spo2Data.push(Number(r.spo2 || 0));
+/* simulate BP using HR */
 
-tempData.push(Number(r.tempC || 0));
+bpData.push(
+Math.round(r.hr/1.5)
+);
+
+
+spo2Data.push(
+r.spo2
+);
+
+
+tempData.push(
+r.tempC
+);
 
 
 labels.push(
-
 new Date(r.ts_ms)
-.toLocaleTimeString()
-
+.toLocaleDateString()
 );
 
 });
@@ -130,66 +133,23 @@ new Date(r.ts_ms)
 
 drawChart();
 
-showRecords(entries);
+showRecentRecords(entries);
 
 });
 
 }
 
 
-/* ---------------- EXTRA SENSOR ---------------- */
-
-function loadExtra(){
-
-const ref =
-db.ref("health_monitoring");
-
-ref.limitToLast(1)
-.on("value", snap=>{
-
-const data=snap.val();
-
-if(!data) return;
-
-
-const key=
-Object.keys(data)[0];
-
-const d=data[key];
-
-
-/* update UI */
-
-document.getElementById("ecg")
-.innerText = d.ecgValue || "--";
-
-
-document.getElementById("bodyTemp")
-.innerText =
-d.bodyTemperature || "--";
-
-
-document.getElementById("accel")
-.innerText =
-Number(d.accelX || 0)
-.toFixed(1);
-
-});
-
-}
-
-
-/* ---------------- CHART ---------------- */
+/* ---------------- DRAW CHART ---------------- */
 
 function drawChart(){
 
 const ctx =
-document.getElementById("chart");
+document.getElementById("healthChart");
 
 if(chart) chart.destroy();
 
-chart =
-new Chart(ctx,{
+chart = new Chart(ctx,{
 
 type:"line",
 
@@ -200,34 +160,21 @@ labels:labels,
 datasets:[
 
 {
-label:"Heart Rate",
-data:hrData,
-borderWidth:2
+label:"Blood Pressure (Sys)",
+data:bpData
 },
 
 {
-label:"SpO2",
-data:spo2Data,
-borderWidth:2
+label:"SpO₂",
+data:spo2Data
 },
 
 {
 label:"Temperature",
-data:tempData,
-borderWidth:2
+data:tempData
 }
 
 ]
-
-},
-
-options:{
-
-plugins:{
-legend:{
-position:"bottom"
-}
-}
 
 }
 
@@ -236,45 +183,52 @@ position:"bottom"
 }
 
 
-/* ---------------- RECORD LIST ---------------- */
+/* ---------------- SHOW RECENT RECORDS ---------------- */
 
-function showRecords(entries){
+function showRecentRecords(entries){
 
 const container =
-document.getElementById("records");
+document.getElementById("recentRecords");
 
 container.innerHTML="";
 
 
-entries.reverse().forEach(item=>{
+entries.reverse().forEach(item => {
 
 const r=item[1];
 
 const div =
 document.createElement("div");
 
-div.className="recordItem";
+div.className="recordCard";
 
 
 div.innerHTML = `
 
-<div>
+<div class="recordHeader">
 
 ${new Date(r.ts_ms)
 .toLocaleString()}
 
+<span class="badge">
+
+Check Required
+
+</span>
+
 </div>
 
-<div>
 
-HR:
-${Math.round(r.hr)}
+<div class="recordValues">
 
-|
-SpO2:
+BP:
+${Math.round(r.hr/1.5)}/85 mmHg
+
+
+SpO₂:
 ${r.spo2}%
 
-|
+
 Temp:
 ${r.tempC}°C
 
@@ -289,19 +243,8 @@ container.appendChild(div);
 }
 
 
-/* ---------------- FALL ALERT ---------------- */
-
-function showAlert(){
-
-alert("⚠ Fall detected");
-
-}
-
-
 /* ---------------- START ---------------- */
 
-listenLive();
+loadLiveData();
 
 loadGraph();
-
-loadExtra();
