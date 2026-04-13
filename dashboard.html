@@ -8,122 +8,67 @@
 <link rel="stylesheet" href="css/style.css">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
-
-<body class="dashboard">
-
-<!-- top bar -->
+<body>
 
 <div class="nav">
 
 <div class="logo">
-Health Dashboard
+Health Monitor
 </div>
 
-<button onclick="logout()">
-Logout
-</button>
+<button onclick="logout()">Logout</button>
 
 </div>
-
-
 
 <div class="container">
 
-
-<!-- quick actions -->
-
-<div class="quickActions">
-
-<button class="primaryBtn"
-onclick="location.href='add-record.html'">
-
-+ Add New Record
-
-</button>
-
-
-<button
-onclick="location.href='emergency.html'">
-
-Emergency Contacts
-
-</button>
-
-
-<button
-onclick="location.href='records.html'">
-
-View All Records
-
-</button>
-
-</div>
-
-
-
 <h2>Health Overview</h2>
 
-
-
-<!-- cards -->
-
 <div class="grid">
-
 
 <div class="card">
 <div class="label">Heart Rate</div>
 <div id="hr" class="stat">--</div>
 </div>
 
-
 <div class="card">
-<div class="label">SpO₂</div>
+<div class="label">SpO2</div>
 <div id="spo2" class="stat">--</div>
 </div>
-
 
 <div class="card">
 <div class="label">Temperature</div>
 <div id="temp" class="stat">--</div>
 </div>
 
-
 <div class="card">
 <div class="label">Status</div>
 <div id="status" class="stat">Normal</div>
 </div>
-
 
 <div class="card">
 <div class="label">ECG</div>
 <div id="ecg" class="stat">--</div>
 </div>
 
-
 <div class="card">
 <div class="label">Body Temp</div>
 <div id="bodyTemp" class="stat">--</div>
 </div>
-
 
 <div class="card">
 <div class="label">Acceleration</div>
 <div id="accel" class="stat">--</div>
 </div>
 
-
 </div>
 
-
-
-<!-- graph -->
 
 <div class="card chartCard">
 
@@ -134,12 +79,9 @@ View All Records
 </div>
 
 
-
-<!-- records -->
-
 <div class="card">
 
-<h3>Recent Records</h3>
+<h3>Previous Records</h3>
 
 <div id="records"></div>
 
@@ -149,8 +91,8 @@ View All Records
 </div>
 
 
-
 <script src="js/firebase.js"></script>
+
 <script src="js/dashboard.js"></script>
 
 </body>

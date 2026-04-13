@@ -2,8 +2,15 @@ let chart;
 
 const deviceId = "A4F00F5AC2E8";
 
+const latestRef =
+db.ref("devices/"+deviceId+"/latest");
 
-/* arrays for graph */
+const logsRef =
+db.ref("devices/"+deviceId+"/logs");
+
+const healthRef =
+db.ref("health_monitoring");
+
 
 let hrData=[];
 let spo2Data=[];
@@ -11,49 +18,40 @@ let tempData=[];
 let labels=[];
 
 
-/* ---------------- LOAD LIVE DATA ---------------- */
 
-function loadLatest(){
+/* LIVE DATA */
 
-firebase.database()
+latestRef.on("value",snap=>{
 
-.ref("devices/"+deviceId+"/latest")
-
-.on("value", snap => {
-
-const d = snap.val();
+const d=snap.val();
 
 if(!d) return;
 
+document.getElementById("hr").innerText=
+Math.round(d.hr);
 
-/* update cards */
+document.getElementById("spo2").innerText=
+d.spo2+"%";
 
-document.getElementById("hr").innerText =
-d.hr ? Math.round(d.hr) : "--";
+document.getElementById("temp").innerText=
+d.tempC+"°C";
 
-
-document.getElementById("spo2").innerText =
-d.spo2 ? d.spo2 + "%" : "--";
-
-
-document.getElementById("temp").innerText =
-d.tempC ? d.tempC + "°C" : "--";
-
-
-/* status */
+document.getElementById("ecg").innerText=
+d.ecgRaw;
 
 if(d.fall){
 
-document.getElementById("status").innerText =
-"Check Required";
+document.getElementById("status").innerText=
+"Fall Detected";
 
 document.getElementById("status").style.color="red";
 
-}
+alert("⚠ FALL DETECTED");
 
+}
 else{
 
-document.getElementById("status").innerText =
+document.getElementById("status").innerText=
 "Normal";
 
 document.getElementById("status").style.color="green";
@@ -62,139 +60,115 @@ document.getElementById("status").style.color="green";
 
 });
 
-}
 
 
+/* LOG GRAPH */
 
-/* ---------------- LOAD LOG HISTORY ---------------- */
+logsRef.limitToLast(10).on("value",snap=>{
 
-function loadLogs(){
+const logs=snap.val();
 
-firebase.database()
-
-.ref("devices/"+deviceId+"/logs")
-
-.limitToLast(20)
-
-.on("value", snap => {
-
-const logs = snap.val();
-
-if(!logs){
-
-console.log("no logs found");
-
-return;
-
-}
-
+if(!logs) return;
 
 hrData=[];
 spo2Data=[];
 tempData=[];
 labels=[];
 
+Object.values(logs).forEach(l=>{
 
-/* convert object → array */
+hrData.push(l.hr);
 
-const entries = Object.entries(logs);
+spo2Data.push(l.spo2);
 
-
-/* sort by timestamp */
-
-entries.sort((a,b)=>
-
-a[1].ts_ms - b[1].ts_ms
-
-);
-
-
-/* fill arrays */
-
-entries.forEach(item => {
-
-const r=item[1];
-
-
-hrData.push(Number(r.hr||0));
-
-spo2Data.push(Number(r.spo2||0));
-
-tempData.push(Number(r.tempC||0));
-
+tempData.push(l.tempC);
 
 labels.push(
-
-new Date(r.ts_ms)
-
-.toLocaleTimeString()
-
+new Date(l.ts_ms).toLocaleTimeString()
 );
 
 });
-
 
 drawChart();
 
-displayRecords(entries);
-
 });
 
-}
 
 
+/* BODY TEMP + ACCEL */
 
-/* ---------------- LOAD EXTRA SENSOR DATA ---------------- */
+healthRef.limitToLast(1).on("value",snap=>{
 
-function loadExtra(){
-
-firebase.database()
-
-.ref("health_monitoring")
-
-.limitToLast(1)
-
-.on("value", snap => {
-
-const data = snap.val();
+const data=snap.val();
 
 if(!data) return;
 
+const latest=Object.values(data)[0];
 
-const key = Object.keys(data)[0];
+document.getElementById("bodyTemp").innerText=
+latest.bodyTemperature+"°C";
 
-const d = data[key];
+document.getElementById("accel").innerText=
 
+Math.round(
 
-/* update cards */
+Math.sqrt(
+latest.accelX**2+
+latest.accelY**2+
+latest.accelZ**2
+)
 
-document.getElementById("ecg").innerText =
-d.ecgValue || "--";
-
-
-document.getElementById("bodyTemp").innerText =
-d.bodyTemperature || "--";
-
-
-document.getElementById("accel").innerText =
-Number(d.accelX||0).toFixed(1);
+);
 
 });
 
-}
+
+
+/* RECORD LIST */
+
+logsRef.limitToLast(5).on("value",snap=>{
+
+const logs=snap.val();
+
+const div=document.getElementById("records");
+
+div.innerHTML="";
+
+if(!logs) return;
+
+Object.values(logs).reverse().forEach(l=>{
+
+div.innerHTML+=`
+
+<div class="recordItem">
+
+${new Date(l.ts_ms).toLocaleString()}<br>
+
+HR ${l.hr}
+|
+SpO2 ${l.spo2}
+|
+Temp ${l.tempC}
+
+</div>
+
+`;
+
+});
+
+});
 
 
 
-/* ---------------- DRAW GRAPH ---------------- */
+/* CHART */
 
 function drawChart(){
 
-const ctx =
-document.getElementById("chart");
+const ctx=document.getElementById("chart");
 
 if(chart) chart.destroy();
 
-chart = new Chart(ctx,{
+chart=new Chart(ctx,{
 
 type:"line",
 
@@ -206,36 +180,21 @@ datasets:[
 
 {
 label:"Heart Rate",
-data:hrData,
-borderWidth:2
+data:hrData
 },
 
 {
-label:"SpO₂",
-data:spo2Data,
-borderWidth:2
+label:"SpO2",
+data:spo2Data
 },
 
 {
-label:"Temperature",
-data:tempData,
-borderWidth:2
+label:"Temp",
+data:tempData
 }
 
 ]
 
-},
-
-options:{
-
-responsive:true,
-
-plugins:{
-legend:{
-position:"bottom"
-}
-}
-
 }
 
 });
@@ -244,72 +203,8 @@ position:"bottom"
 
 
 
-/* ---------------- SHOW RECORD LIST ---------------- */
+function logout(){
 
-function displayRecords(entries){
-
-const container =
-document.getElementById("records");
-
-container.innerHTML="";
-
-
-entries.reverse().forEach(item=>{
-
-const r=item[1];
-
-
-const div=document.createElement("div");
-
-div.className="recordItem";
-
-
-div.innerHTML=`
-
-<div>
-
-<b>
-
-${new Date(r.ts_ms)
-
-.toLocaleString()}
-
-</b>
-
-</div>
-
-
-<div>
-
-HR:
-${Math.round(r.hr)}
-
-|
-
-SpO₂:
-${r.spo2}%
-
-|
-
-Temp:
-${r.tempC}°C
-
-</div>
-
-`;
-
-container.appendChild(div);
-
-});
+window.location.href="login.html";
 
 }
-
-
-
-/* ---------------- START ---------------- */
-
-loadLatest();
-
-loadLogs();
-
-loadExtra();
