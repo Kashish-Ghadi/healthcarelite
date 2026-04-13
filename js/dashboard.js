@@ -2,38 +2,49 @@ const deviceId = "A4F00F5AC2E8";
 
 let chart;
 
-/* REFERENCES */
+/* DATABASE PATHS */
 
 const latestRef =
-db.ref("devices/"+deviceId+"/latest");
+firebase.database().ref(
+"devices/"+deviceId+"/latest"
+);
 
 const logsRef =
-db.ref("devices/"+deviceId+"/logs");
+firebase.database().ref(
+"devices/"+deviceId+"/logs"
+);
 
 const healthRef =
-db.ref("health_monitoring");
+firebase.database().ref(
+"health_monitoring"
+);
 
-/* LIVE SENSOR VALUES */
+
+
+/* LOAD LATEST SENSOR VALUES */
 
 latestRef.on("value", snap => {
 
-const d = snap.val();
+const data = snap.val();
 
-if(!d) return;
+console.log("LATEST:", data);
+
+if(!data) return;
 
 document.getElementById("hr").innerText =
-d.hr || "--";
+data.hr ?? "--";
 
 document.getElementById("spo2").innerText =
-d.spo2 ? d.spo2+"%" : "--";
+data.spo2 ?? "--";
 
 document.getElementById("temp").innerText =
-d.tempC ? d.tempC+"°C" : "--";
+data.tempC ?? "--";
 
 document.getElementById("ecg").innerText =
-d.ecgRaw || "--";
+data.ecgRaw ?? "--";
 
-if(d.fall){
+
+if(data.fall){
 
 document.getElementById("status").innerText =
 "Fall Detected";
@@ -41,8 +52,7 @@ document.getElementById("status").innerText =
 document.getElementById("status").style.color =
 "red";
 
-}
-else{
+}else{
 
 document.getElementById("status").innerText =
 "Normal";
@@ -54,11 +64,15 @@ document.getElementById("status").style.color =
 
 });
 
-/* BODY TEMP + ACCEL DATA */
+
+
+/* LOAD BODY TEMP + ACCEL */
 
 healthRef.limitToLast(1).on("value", snap => {
 
 const data = snap.val();
+
+console.log("HEALTH:", data);
 
 if(!data) return;
 
@@ -66,18 +80,13 @@ const latest =
 Object.values(data)[0];
 
 document.getElementById("bodyTemp").innerText =
-latest.bodyTemperature
-? latest.bodyTemperature+"°C"
-: "--";
+latest.bodyTemperature ?? "--";
 
-const accel =
-Math.sqrt(
+const accel = Math.sqrt(
 
-latest.accelX**2 +
-
-latest.accelY**2 +
-
-latest.accelZ**2
+(latest.accelX ?? 0)**2 +
+(latest.accelY ?? 0)**2 +
+(latest.accelZ ?? 0)**2
 
 ).toFixed(2);
 
@@ -86,83 +95,75 @@ accel;
 
 });
 
-/* GRAPH */
+
+
+/* LOAD GRAPH */
 
 logsRef.limitToLast(10).on("value", snap => {
 
 const logs = snap.val();
 
+console.log("LOGS:", logs);
+
 if(!logs) return;
 
-const hrData=[];
-const spo2Data=[];
-const tempData=[];
 const labels=[];
+const hr=[];
+const spo2=[];
+const temp=[];
 
-Object.values(logs).forEach(l=>{
-
-hrData.push(l.hr);
-
-spo2Data.push(l.spo2);
-
-tempData.push(l.tempC);
+Object.values(logs).forEach(item => {
 
 labels.push(
-
-new Date(l.ts_ms).toLocaleTimeString()
-
+new Date(item.ts_ms).toLocaleTimeString()
 );
+
+hr.push(item.hr);
+spo2.push(item.spo2);
+temp.push(item.tempC);
 
 });
 
-drawChart(
-
-labels,
-
-hrData,
-
-spo2Data,
-
-tempData
-
-);
+drawChart(labels, hr, spo2, temp);
 
 });
 
-/* RECORD LIST */
+
+
+/* LOAD PREVIOUS RECORDS */
 
 logsRef.limitToLast(5).on("value", snap => {
 
 const logs = snap.val();
 
-const div =
+const container =
 document.getElementById("records");
 
-div.innerHTML="";
+container.innerHTML="";
 
 if(!logs) return;
 
 Object.values(logs)
-
 .reverse()
+.forEach(item => {
 
-.forEach(l=>{
-
-div.innerHTML+=`
+container.innerHTML += `
 
 <div class="recordItem">
 
-${new Date(l.ts_ms).toLocaleString()}<br>
+${new Date(item.ts_ms).toLocaleString()}
 
-HR: ${l.hr}
+<br>
 
-|
-
-SpO2: ${l.spo2}
+HR: ${item.hr}
 
 |
 
-Temp: ${l.tempC}
+SpO2: ${item.spo2}
+
+|
+
+Temp: ${item.tempC}
 
 </div>
 
@@ -172,16 +173,15 @@ Temp: ${l.tempC}
 
 });
 
-/* CHART FUNCTION */
+
+
+/* DRAW CHART */
 
 function drawChart(
 
 labels,
-
 hr,
-
 spo2,
-
 temp
 
 ){
@@ -191,39 +191,29 @@ document.getElementById("chart");
 
 if(chart) chart.destroy();
 
-chart =
-new Chart(ctx,{
+chart = new Chart(ctx, {
 
-type:"line",
+type: "line",
 
-data:{
+data: {
 
-labels:labels,
+labels: labels,
 
-datasets:[
+datasets: [
 
 {
-
-label:"Heart Rate",
-
-data:hr
-
+label: "Heart Rate",
+data: hr
 },
 
 {
-
-label:"SpO2",
-
-data:spo2
-
+label: "SpO2",
+data: spo2
 },
 
 {
-
-label:"Temperature",
-
-data:temp
-
+label: "Temperature",
+data: temp
 }
 
 ]
@@ -234,10 +224,13 @@ data:temp
 
 }
 
+
+
 /* LOGOUT */
 
 function logout(){
 
-window.location.href="login.html";
+window.location.href =
+"login.html";
 
 }
