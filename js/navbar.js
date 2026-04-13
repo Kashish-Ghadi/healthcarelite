@@ -10,16 +10,13 @@ return;
 
 }
 
-const navbar = `
+const navHTML = `
 
 <div class="nav">
 
 <div class="logo">
-
 Health Monitor
-
 </div>
-
 
 <div class="menu">
 
@@ -31,20 +28,13 @@ Health Monitor
 
 <a href="records.html">Records</a>
 
-
 <span class="userEmail">
-
 ${user.email}
-
 </span>
 
-
 <button onclick="logout()" class="logoutBtn">
-
 Logout
-
 </button>
-
 
 </div>
 
@@ -52,7 +42,7 @@ Logout
 
 `;
 
-document.body.insertAdjacentHTML("afterbegin", navbar);
+document.body.insertAdjacentHTML("afterbegin", navHTML);
 
 });
 

@@ -1,35 +1,65 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
-<title>Health Monitor</title>
+<title>Login</title>
 
 <link rel="stylesheet" href="css/style.css">
 
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
 </head>
 
-<body>
 
-<div class="center">
+<body class="loginPage">
 
-<div class="loginCard">
 
-<div class="logoCircle">❤</div>
+<div class="card loginCard">
 
-<h1>Health Monitor</h1>
+<h2>Health Monitor</h2>
 
-<p>Your personal health tracking dashboard</p>
+<p>Login or create account</p>
 
-<button onclick="location.href='dashboard.html'" class="primaryBtn">
 
-Enter Dashboard
+<input
+id="email"
+type="email"
+placeholder="Email"
+>
+
+
+<input
+id="password"
+type="password"
+placeholder="Password"
+>
+
+
+<button onclick="login()">
+
+Login
 
 </button>
 
-</div>
+
+<button onclick="signup()">
+
+Create Account
+
+</button>
+
 
 </div>
+
+
+<script src="js/firebase.js"></script>
+
+<script src="js/auth.js"></script>
+
 
 </body>
 

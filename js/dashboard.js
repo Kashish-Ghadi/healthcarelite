@@ -1,3 +1,12 @@
+firebase.auth().onAuthStateChanged(user=>{
+
+if(!user){
+
+window.location.href="login.html";
+
+}
+
+});
 const deviceId = "A4F00F5AC2E8";
 
 console.log("STARTING DASHBOARD");
