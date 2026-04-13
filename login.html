@@ -1,63 +1,77 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
 
-<title>Login</title>
+<title>Health Monitor Login</title>
 
 <link rel="stylesheet" href="css/style.css">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
 </head>
 
-
 <body class="loginPage">
 
+
+<div class="loginWrapper">
 
 <div class="card loginCard">
 
 <h2>Health Monitor</h2>
 
-<p>Login or create account</p>
+<p>Your personal health tracking dashboard</p>
 
 
 <input
 id="email"
 type="email"
-placeholder="Email"
+placeholder="Enter email"
 >
 
+
+<div class="passwordBox">
 
 <input
 id="password"
 type="password"
-placeholder="Password"
+placeholder="Enter password"
 >
 
-
-<button onclick="login()">
-
-Login
-
+<button
+type="button"
+class="showBtn"
+onmousedown="showPassword()"
+onmouseup="hidePassword()"
+onmouseleave="hidePassword()"
+>
+👁
 </button>
-
-
-<button onclick="signup()">
-
-Create Account
-
-</button>
-
 
 </div>
 
 
-<script src="js/firebase.js"></script>
+<div class="btnGroup">
 
+<button onclick="login()">
+Login
+</button>
+
+<button onclick="signup()">
+Create Account
+</button>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+
+<script src="js/firebase.js"></script>
 <script src="js/auth.js"></script>
 
 

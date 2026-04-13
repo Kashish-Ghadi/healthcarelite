@@ -1,14 +1,67 @@
-function login(){
+function signup(){
 
-const email=document.getElementById("email").value;
-const password=document.getElementById("password").value;
+const email =
+document.getElementById("email").value;
 
-auth.signInWithEmailAndPassword(email,password)
+const password =
+document.getElementById("password").value;
+
+firebase.auth()
+.createUserWithEmailAndPassword(email,password)
+
 .then(()=>{
 
-window.location="dashboard.html"
+alert("Account created");
+
+window.location.href="dashboard.html";
 
 })
-.catch(e=>alert(e.message))
+
+.catch(error=>{
+
+alert(error.message);
+
+});
+
+}
+
+
+
+function login(){
+
+const email =
+document.getElementById("email").value;
+
+const password =
+document.getElementById("password").value;
+
+firebase.auth()
+.signInWithEmailAndPassword(email,password)
+
+.then(()=>{
+
+window.location.href="dashboard.html";
+
+})
+
+.catch(error=>{
+
+alert(error.message);
+
+});
+
+}
+
+
+
+function showPassword(){
+
+document.getElementById("password").type="text";
+
+}
+
+function hidePassword(){
+
+document.getElementById("password").type="password";
 
 }
