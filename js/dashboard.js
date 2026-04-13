@@ -2,74 +2,51 @@ const deviceId = "A4F00F5AC2E8";
 
 let chart;
 
+console.log("Dashboard loaded");
 
-/* -------- CHECK FIREBASE CONNECTION -------- */
-
-console.log("Firebase connected:", firebase.app().name);
+console.log("Firebase DB:", db);
 
 
-/* -------- LATEST SENSOR DATA -------- */
+/* -------- LATEST -------- */
 
-firebase.database()
-.ref("devices/" + deviceId + "/latest")
-.on("value", function(snapshot){
+db.ref("devices/"+deviceId+"/latest")
+.on("value", snap => {
 
-const d = snapshot.val();
+const d = snap.val();
 
-console.log("LATEST DATA:", d);
+console.log("LATEST:", d);
 
 if(!d){
 
-console.log("No latest data found");
+document.getElementById("hr").innerText="--";
 
 return;
 
 }
 
-document.getElementById("hr").innerText =
-d.hr ?? "--";
+document.getElementById("hr").innerText=d.hr;
 
-document.getElementById("spo2").innerText =
-d.spo2 ?? "--";
+document.getElementById("spo2").innerText=d.spo2;
 
-document.getElementById("temp").innerText =
-d.tempC ?? "--";
+document.getElementById("temp").innerText=d.tempC;
 
-document.getElementById("ecg").innerText =
-d.ecgRaw ?? "--";
-
-if(d.fall){
+document.getElementById("ecg").innerText=d.ecgRaw;
 
 document.getElementById("status").innerText =
-"Fall Detected";
-
-document.getElementById("status").style.color =
-"red";
-
-}else{
-
-document.getElementById("status").innerText =
-"Normal";
-
-document.getElementById("status").style.color =
-"green";
-
-}
+d.fall ? "Fall Detected" : "Normal";
 
 });
 
 
+/* -------- BODY TEMP -------- */
 
-/* -------- BODY TEMP + ACCEL -------- */
-
-firebase.database()
-.ref("health_monitoring")
+db.ref("health_monitoring")
 .limitToLast(1)
-.on("value", function(snapshot){
+.on("value", snap => {
 
-const data = snapshot.val();
+const data = snap.val();
 
-console.log("HEALTH DATA:", data);
+console.log("BODY:", data);
 
 if(!data) return;
 
@@ -77,13 +54,13 @@ const latest =
 Object.values(data)[0];
 
 document.getElementById("bodyTemp").innerText =
-latest.bodyTemperature ?? "--";
+latest.bodyTemperature;
 
 const accel = Math.sqrt(
 
-(latest.accelX || 0) ** 2 +
-(latest.accelY || 0) ** 2 +
-(latest.accelZ || 0) ** 2
+latest.accelX**2 +
+latest.accelY**2 +
+latest.accelZ**2
 
 ).toFixed(2);
 
@@ -93,17 +70,15 @@ accel;
 });
 
 
-
 /* -------- GRAPH -------- */
 
-firebase.database()
-.ref("devices/" + deviceId + "/logs")
+db.ref("devices/"+deviceId+"/logs")
 .limitToLast(10)
-.on("value", function(snapshot){
+.on("value", snap => {
 
-const logs = snapshot.val();
+const logs = snap.val();
 
-console.log("LOG DATA:", logs);
+console.log("LOGS:", logs);
 
 if(!logs) return;
 
@@ -112,7 +87,7 @@ const hr=[];
 const spo2=[];
 const temp=[];
 
-Object.values(logs).forEach(function(l){
+Object.values(logs).forEach(l=>{
 
 labels.push(
 new Date(l.ts_ms).toLocaleTimeString()
@@ -129,24 +104,22 @@ drawChart(labels, hr, spo2, temp);
 });
 
 
+/* -------- RECORDS -------- */
 
-/* -------- PREVIOUS RECORDS -------- */
-
-firebase.database()
-.ref("devices/" + deviceId + "/logs")
+db.ref("devices/"+deviceId+"/logs")
 .limitToLast(5)
-.on("value", function(snapshot){
+.on("value", snap => {
 
-const logs = snapshot.val();
+const logs = snap.val();
 
-const div =
+const container =
 document.getElementById("records");
 
-div.innerHTML="";
+container.innerHTML="";
 
 if(!logs){
 
-div.innerHTML="No previous records";
+container.innerHTML="No data";
 
 return;
 
@@ -154,25 +127,21 @@ return;
 
 Object.values(logs)
 .reverse()
-.forEach(function(r){
+.forEach(r=>{
 
-div.innerHTML += `
+container.innerHTML += `
 
-<div class="recordItem">
+<div class="record">
 
 ${new Date(r.ts_ms).toLocaleString()}
 
 <br>
 
-HR: ${r.hr}
+HR ${r.hr}
 
-|
+SpO2 ${r.spo2}
 
-SpO2: ${r.spo2}
-
-|
-
-Temp: ${r.tempC}
+Temp ${r.tempC}
 
 </div>
 
@@ -183,17 +152,13 @@ Temp: ${r.tempC}
 });
 
 
-
-/* -------- CHART -------- */
-
 function drawChart(labels, hr, spo2, temp){
 
-const ctx =
-document.getElementById("chart");
+const ctx=document.getElementById("chart");
 
 if(chart) chart.destroy();
 
-chart = new Chart(ctx,{
+chart=new Chart(ctx,{
 
 type:"line",
 
@@ -203,20 +168,11 @@ labels:labels,
 
 datasets:[
 
-{
-label:"Heart Rate",
-data:hr
-},
+{label:"HR",data:hr},
 
-{
-label:"SpO2",
-data:spo2
-},
+{label:"SpO2",data:spo2},
 
-{
-label:"Temperature",
-data:temp
-}
+{label:"Temp",data:temp}
 
 ]
 
