@@ -3,157 +3,220 @@ firebase.auth().onAuthStateChanged(user=>{
 if(!user){
 
 window.location.href="login.html";
-
 return;
 
 }
 
-loadManualRecords();
+loadAllLogs();
 
-loadDeviceLogs();
+});
 
-loadHealthMonitoring();
+
+function loadAllLogs(){
+
+let allLogs=[];
+
+
+// manual records
+
+db.ref("manualRecords")
+
+.once("value",snap=>{
+
+const data=snap.val();
+
+if(data){
+
+Object.values(data).forEach(r=>{
+
+allLogs.push({
+
+type:"Manual",
+
+time:r.timestamp || Date.now(),
+
+data:r
+
+});
+
+});
+
+}
 
 });
 
 
 
-function addCard(title,data){
+// device logs
+
+db.ref("devices/A4F00F5AC2E8/logs")
+
+.once("value",snap=>{
+
+const data=snap.val();
+
+if(data){
+
+Object.values(data).forEach(r=>{
+
+allLogs.push({
+
+type:"Vitals",
+
+time:r.ts_ms || Date.now(),
+
+data:r
+
+});
+
+});
+
+}
+
+});
+
+
+
+
+// sensor logs
+
+db.ref("health_monitoring")
+
+.once("value",snap=>{
+
+const data=snap.val();
+
+if(data){
+
+Object.values(data).forEach(r=>{
+
+allLogs.push({
+
+type:"Sensors",
+
+time:r.ts_ms || Date.now(),
+
+data:r
+
+});
+
+});
+
+}
+
+
+displayLogs(allLogs);
+
+});
+
+}
+
+
+
+function displayLogs(logs){
+
+logs.sort((a,b)=> b.time-a.time);
+
 
 const container=document.getElementById("records");
 
-container.innerHTML += `
+container.innerHTML="";
 
-<div class="card">
 
-<h3>${title}</h3>
+logs.forEach((log,index)=>{
 
-${data}
+
+const date=new Date(log.time).toLocaleString();
+
+
+container.innerHTML+=`
+
+<div class="card clickable"
+
+onclick="showDetails(${index})">
+
+<strong>${date}</strong>
+
+<br>
+
+${log.type} Record
 
 </div>
+
+`;
+
+});
+
+
+window.allLogs=logs;
+
+}
+
+
+
+function showDetails(i){
+
+const log=window.allLogs[i];
+
+
+let details="";
+
+
+if(log.type==="Manual"){
+
+details=`
+
+BP: ${log.data.systolic}/${log.data.diastolic}
+
+SpO2: ${log.data.spo2}%
+
+Temp: ${log.data.temp}°C
+
+Notes: ${log.data.notes || "-"}
 
 `;
 
 }
 
 
+if(log.type==="Vitals"){
 
-function loadManualRecords(){
+details=`
 
-db.ref("manualRecords")
+Heart Rate: ${log.data.hr}
 
-.limitToLast(10)
+SpO2: ${log.data.spo2}%
 
-.on("value",snap=>{
+Temperature: ${log.data.tempC}°C
 
-const data=snap.val();
+ECG Raw: ${log.data.ecgRaw}
 
-if(!data) return;
+Fall: ${log.data.fall}
 
-Object.values(data).reverse().forEach(r=>{
-
-addCard(
-
-"Manual Record",
-
-`
-
-<p>BP: ${r.systolic}/${r.diastolic}</p>
-
-<p>SpO2: ${r.spo2}%</p>
-
-<p>Temp: ${r.temp}°C</p>
-
-<p>${r.notes || ""}</p>
-
-`
-
-);
-
-});
-
-});
+`;
 
 }
 
 
+if(log.type==="Sensors"){
 
-function loadDeviceLogs(){
+details=`
 
-db.ref("devices/A4F00F5AC2E8/logs")
+ECG Value: ${log.data.ecgValue}
 
-.limitToLast(10)
+Body Temp: ${log.data.bodyTemperature}
 
-.on("value",snap=>{
+Accel X: ${log.data.accelX}
 
-const data=snap.val();
+Accel Y: ${log.data.accelY}
 
-if(!data) return;
+Accel Z: ${log.data.accelZ}
 
-Object.values(data).reverse().forEach(r=>{
-
-addCard(
-
-"Device Log",
-
-`
-
-<p>HR: ${r.hr}</p>
-
-<p>SpO2: ${r.spo2}%</p>
-
-<p>Temp: ${r.tempC}°C</p>
-
-<p>ECG: ${r.ecgRaw}</p>
-
-`
-
-);
-
-});
-
-});
+`;
 
 }
 
 
-
-function loadHealthMonitoring(){
-
-db.ref("health_monitoring")
-
-.limitToLast(10)
-
-.on("value",snap=>{
-
-const data=snap.val();
-
-if(!data) return;
-
-Object.values(data).reverse().forEach(r=>{
-
-addCard(
-
-"Sensor Record",
-
-`
-
-<p>ECG: ${r.ecgValue}</p>
-
-<p>Body Temp: ${r.bodyTemperature}</p>
-
-<p>Accel X: ${r.accelX}</p>
-
-<p>Accel Y: ${r.accelY}</p>
-
-<p>Accel Z: ${r.accelZ}</p>
-
-`
-
-);
-
-});
-
-});
+alert(details);
 
 }

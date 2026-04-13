@@ -355,3 +355,19 @@ border-radius:6px;
 cursor:pointer;
 
 }
+
+.clickable{
+
+cursor:pointer;
+
+transition:0.2s;
+
+}
+
+.clickable:hover{
+
+transform:scale(1.02);
+
+box-shadow:0 4px 12px rgba(0,0,0,0.1);
+
+}
