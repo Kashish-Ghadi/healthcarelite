@@ -2,188 +2,50 @@
 <html>
 
 <head>
+  <title>Add Record</title>
+  <link rel="stylesheet" href="css/style.css">
 
-<meta charset="UTF-8">
-
-<title>Add Health Record</title>
-
-<link rel="stylesheet" href="css/style.css">
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-<script src="js/firebase.js"></script>
-
-<script defer src="js/record.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 </head>
 
 <body>
 
-<div class="nav">
-
-<div class="logo">
-
-❤ Health Dashboard
-
-</div>
-
-<a href="dashboard.html">
-
-⬅ Back to Dashboard
-
-</a>
-
-</div>
-
+<!-- NAVBAR -->
+<div id="navbar"></div>
 
 <div class="container">
 
-<h2 class="title">
+  <h2>Add New Health Record</h2>
 
-Add New Health Record
+  <!-- FORM -->
+  <div class="card">
 
-</h2>
+    <label>Systolic BP</label>
+    <input type="number" id="systolic" placeholder="120">
 
+    <label>Diastolic BP</label>
+    <input type="number" id="diastolic" placeholder="80">
 
+    <label>SpO2 (%)</label>
+    <input type="number" id="spo2" placeholder="98">
 
-<div class="formCard">
+    <label>Temperature (°C)</label>
+    <input type="number" id="temp" placeholder="36.6">
 
+    <label>Notes (Optional)</label>
+    <textarea id="notes" placeholder="Additional info..."></textarea>
 
-<h3>
+    <button onclick="saveRecord()">Save Health Record</button>
 
-Record Your Vitals
-
-</h3>
-
-<p class="subtitle">
-
-Enter your current health measurements
-
-</p>
-
-
-<div class="formGrid">
-
-
-<div class="inputGroup">
-
-<label>
-
-Systolic BP (mmHg)
-
-</label>
-
-<input id="sys" placeholder="120">
-
-<span class="hint">
-
-Normal: 90–120
-
-</span>
+  </div>
 
 </div>
-
-
-
-<div class="inputGroup">
-
-<label>
-
-Diastolic BP (mmHg)
-
-</label>
-
-<input id="dia" placeholder="80">
-
-<span class="hint">
-
-Normal: 60–80
-
-</span>
-
-</div>
-
-
-
-<div class="inputGroup">
-
-<label>
-
-Oxygen Saturation (%)
-
-</label>
-
-<input id="spo2Input" placeholder="98">
-
-<span class="hint">
-
-Normal: 95–100
-
-</span>
-
-</div>
-
-
-
-<div class="inputGroup">
-
-<label>
-
-Temperature (°C)
-
-</label>
-
-<input id="tempInput" placeholder="36.6">
-
-<span class="hint">
-
-Normal: 36.1–37.2
-
-</span>
-
-</div>
-
-
-</div>
-
-
-
-<div class="inputGroup">
-
-<label>
-
-Notes (Optional)
-
-</label>
-
-<textarea id="notes" placeholder="Additional info..."></textarea>
-
-</div>
-
-
-
-<button onclick="saveRecord()" class="primaryBtn">
-
-Save Health Record
-
-</button>
-
-
-</div>
-
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
 <script src="js/firebase.js"></script>
-
 <script src="js/navbar.js"></script>
+<script src="js/record.js"></script>
 
 <script>
 loadNavbar();
@@ -191,4 +53,3 @@ loadNavbar();
 
 </body>
 </html>
-

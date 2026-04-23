@@ -1,3 +1,4 @@
+// AUTH CHECK
 firebase.auth().onAuthStateChanged(user=>{
 if(!user){
 window.location.href="login.html";
@@ -6,43 +7,46 @@ return;
 loadAllLogs();
 });
 
-let chart;
-let timelineChart;
-let allLogs=[];
+let allLogs = [];
 
+
+/* ================= TIME FIX ================= */
 function fixTime(t){
 if(!t) return Date.now();
-if(t.toString().length<=10) return t*1000;
+if(t < 1000000000000) t = t * 1000;
+if(isNaN(new Date(t).getTime())) return Date.now();
 return t;
 }
 
 
-// ================= LOAD DATA =================
-function loadAllLogs(){
-
-allLogs=[];
-
-// DEVICE LOGS
-db.ref("devices/A4F00F5AC2E8/logs").once("value",snap=>{
-let data=snap.val();
-if(data){
-Object.values(data).forEach(r=>{
-allLogs.push({
-time:fixTime(r.ts_ms),
-data:r,
-type:"device"
-});
+/* ================= DATE ================= */
+function formatDate(t){
+let d = new Date(t);
+return d.toLocaleDateString("en-IN", {
+day:"2-digit",
+month:"short",
+year:"numeric"
 });
 }
-});
 
-// SENSOR LOGS
-db.ref("health_monitoring").once("value",snap=>{
-let data=snap.val();
+
+/* ================= LOAD ================= */
+function loadAllLogs(){
+
+allLogs = [];
+
+Promise.all([
+db.ref("devices/A4F00F5AC2E8/logs").once("value"),
+db.ref("health_monitoring").once("value"),
+db.ref("manualRecords").once("value")
+])
+.then(([s1,s2,s3])=>{
+
+[s1.val(), s2.val()].forEach(data=>{
 if(data){
 Object.values(data).forEach(r=>{
 allLogs.push({
-time:fixTime(r.ts_ms),
+time: fixTime(r.ts_ms),
 data:r,
 type:"sensor"
 });
@@ -50,241 +54,181 @@ type:"sensor"
 }
 });
 
-// MANUAL RECORDS
-db.ref("manualRecords").once("value",snap=>{
-let data=snap.val();
-if(data){
-Object.values(data).forEach(r=>{
+if(s3.val()){
+Object.values(s3.val()).forEach(r=>{
 allLogs.push({
-time:fixTime(r.timestamp),
+time: fixTime(r.timestamp),
 data:r,
 type:"manual"
 });
-}
-}
-displayLogs();
-drawTimeline();
 });
 }
 
+displayLogs();
 
-// ================= DISPLAY LIST =================
+});
+
+}
+
+
+/* ================= DISPLAY ================= */
 function displayLogs(){
 
 allLogs.sort((a,b)=>b.time-a.time);
 
-let html="";
+let sHTML="", mHTML="";
 
 allLogs.forEach((r,i)=>{
-html+=`
+
+let card = `
 <div class="card clickable" onclick="openLog(${i})">
-<b>${new Date(r.time).toLocaleString("en-IN")}</b><br>
-${r.type.toUpperCase()} RECORD
-</div>
-`;
+<b>${formatDate(r.time)}</b><br>
+${r.type==="manual"?"User Entry":"Sensor Reading"}
+</div>`;
+
+if(r.type==="manual") mHTML+=card;
+else sHTML+=card;
+
 });
 
-document.getElementById("records").innerHTML=html;
+document.getElementById("sensorRecords").innerHTML=sHTML;
+document.getElementById("manualRecords").innerHTML=mHTML;
 
 }
 
 
-// ================= OPEN POPUP =================
+/* ================= POPUP ================= */
 function openLog(i){
 
-let r=allLogs[i];
-let d=r.data;
+let r = allLogs[i];
+let d = r.data;
 
-let info="";
-let labels=[];
-let values=[];
-let normal=[];
+// ===== SAFE VALUES =====
+let hr = d.hr ?? null;
+let spo2 = d.spo2 ?? null;
+let temp = d.tempC ?? d.bodyTemperature ?? null;
+let ecg = d.ecgRaw ?? d.ecgValue ?? null;
 
+// ===== TEXT DISPLAY (FIXED) =====
+let info = "";
 
-// helper
-function check(val,n){
-if(val==null) return "-";
-if(val>n*1.2 || val<n*0.8){
-return `<span style="color:red;font-weight:bold">${val}</span>`;
+function highlight(val, normal){
+if(val === null) return "-";
+if(val > normal*1.2 || val < normal*0.8){
+return `<span style="color:red;font-weight:600">${val}</span>`;
 }
 return val;
 }
 
+info += `Heart Rate: ${highlight(hr,75)}<br>`;
+info += `SpO2: ${highlight(spo2,98)}<br>`;
+info += `Temp: ${highlight(temp,37)} °C<br>`;
+info += `ECG: ${ecg !== null ? ecg : "-"}<br>`;
 
-// HR
-if(d.hr){
-info+=`HR: ${check(d.hr,75)}<br>`;
-labels.push("HR"); values.push(d.hr); normal.push(75);
+if(d.systolic){
+info += `BP: ${d.systolic}/${d.diastolic}<br>`;
 }
 
-// SPO2
-if(d.spo2){
-info+=`SpO2: ${check(d.spo2,98)}%<br>`;
-labels.push("SpO2"); values.push(d.spo2); normal.push(98);
+if(d.notes){
+info += `Notes: ${d.notes}<br>`;
 }
 
-// TEMP
-if(d.tempC){
-info+=`Temp: ${check(d.tempC,37)}°C<br>`;
-labels.push("Temp"); values.push(d.tempC); normal.push(37);
+document.getElementById("popupContent").innerHTML = info;
+document.getElementById("popup").style.display = "flex";
+
+
+// ===== DESTROY OLD CHARTS SAFELY =====
+if (window.compareChart && typeof window.compareChart.destroy === "function") {
+window.compareChart.destroy();
 }
 
-// BODY TEMP
-if(d.bodyTemperature){
-info+=`Body Temp: ${check(d.bodyTemperature,37)}<br>`;
-labels.push("Body"); values.push(d.bodyTemperature); normal.push(37);
-}
-
-// ECG
-if(d.ecgRaw || d.ecgValue){
-info+=`ECG: ${d.ecgRaw || d.ecgValue}<br>`;
-}
-
-// ACCEL
-if(d.accelX){
-let mag=Math.sqrt(
-d.accelX**2 + d.accelY**2 + d.accelZ**2
-).toFixed(2);
-
-info+=`Accel: ${mag}<br>`;
-labels.push("Accel"); values.push(mag); normal.push(9.8);
-}
-
-document.getElementById("popupContent").innerHTML=info;
-document.getElementById("popup").style.display="flex";
-
-drawGraph(labels,values,normal,d.ecgRaw || d.ecgValue);
+if (window.ecgChart && typeof window.ecgChart.destroy === "function") {
+window.ecgChart.destroy();
 }
 
 
-// ================= ECG + NORMAL GRAPH =================
-function drawGraph(labels,data,normal,ecg){
+// ===== ALWAYS SHOW NORMAL VALUES =====
+let labels = ["HR","SpO2","Temp","ECG"];
 
-if(chart) chart.destroy();
+let actual = [
+hr !== null ? hr : null,
+spo2 !== null ? spo2 : null,
+temp !== null ? temp : null,
+ecg !== null ? ecg : null
+];
 
-let ctx=document.getElementById("popupChart");
+let normal = [75, 98, 37, 500];
 
-// ECG waveform
-if(ecg){
 
-let ecgData=[];
-let x=[];
+// ===== COMPARISON CHART =====
+let ctx1 = document.getElementById("compareChart");
 
-for(let i=0;i<100;i++){
-ecgData.push(ecg + Math.sin(i/3)*20 + Math.random()*5);
-x.push(i);
+if(ctx1){
+window.compareChart = new Chart(ctx1, {
+type: "bar",
+data: {
+labels: labels,
+datasets: [
+{
+label: "Actual",
+data: actual
+},
+{
+label: "Normal",
+data: normal
+}
+]
+},
+options: {
+responsive: true
+}
+});
 }
 
-chart=new Chart(ctx,{
-type:"line",
-data:{
-labels:x,
-datasets:[{
-label:"ECG Waveform",
-data:ecgData,
-tension:0.4
+
+// ===== ECG WAVEFORM =====
+if(ecg !== null){
+
+let ctx2 = document.getElementById("ecgChart");
+
+if(ctx2){
+
+let wave = [];
+for(let i=0;i<60;i++){
+wave.push(ecg + Math.sin(i/3)*20);
+}
+
+window.ecgChart = new Chart(ctx2, {
+type: "line",
+data: {
+labels: wave.map((_,i)=>i),
+datasets: [{
+label: "ECG Wave",
+data: wave,
+borderWidth: 2,
+tension: 0.4,
+pointRadius: 0
 }]
-}
-});
-
-return;
-}
-
-
-// NORMAL COMPARISON
-chart=new Chart(ctx,{
-type:"bar",
-data:{
-labels:labels,
-datasets:[
-{
-label:"Your Value",
-data:data,
-backgroundColor:data.map((v,i)=>{
-return (v>normal[i]*1.2 || v<normal[i]*0.8) ? "red":"blue";
-})
 },
-{
-label:"Normal",
-data:normal
-}
-]
+options: {
+responsive: true
 }
 });
+
 }
-
-
-// ================= TIMELINE GRAPH =================
-function drawTimeline(){
-
-let time=[];
-let hr=[];
-let spo2=[];
-let temp=[];
-
-allLogs.sort((a,b)=>a.time-b.time);
-
-allLogs.forEach(r=>{
-time.push(new Date(r.time).toLocaleTimeString());
-
-let d=r.data;
-
-hr.push(d.hr || null);
-spo2.push(d.spo2 || null);
-temp.push(d.tempC || null);
-});
-
-if(timelineChart) timelineChart.destroy();
-
-timelineChart=new Chart(
-document.getElementById("timelineChart"),
-{
-type:"line",
-data:{
-labels:time,
-datasets:[
-{
-label:"HR",
-data:hr,
-spanGaps:true
-},
-{
-label:"SpO2",
-data:spo2,
-spanGaps:true
-},
-{
-label:"Temp",
-data:temp,
-spanGaps:true
 }
-]
-}
-});
-}
-
-
-// ================= PDF EXPORT =================
-function exportPDF(){
-
-let content="Health Report\n\n";
-
-allLogs.forEach(r=>{
-content+=new Date(r.time).toLocaleString()+"\n";
-content+=JSON.stringify(r.data,null,2)+"\n\n";
-});
-
-let blob=new Blob([content],{type:"text/plain"});
-let link=document.createElement("a");
-
-link.href=URL.createObjectURL(blob);
-link.download="health_report.txt";
-link.click();
 
 }
 
 
-// ================= CLOSE =================
+/* ================= CLOSE ================= */
 function closePopup(){
 document.getElementById("popup").style.display="none";
+}
+
+
+/* ================= DROPDOWN ================= */
+function toggleSection(id){
+let el=document.getElementById(id);
+el.style.display = (el.style.display==="block")?"none":"block";
 }

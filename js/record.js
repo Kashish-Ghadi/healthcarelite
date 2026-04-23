@@ -1,25 +1,53 @@
-const recordsRef = db.ref("manualRecords");
+// AUTH CHECK
+firebase.auth().onAuthStateChanged(user=>{
+if(!user){
+window.location.href="login.html";
+}
+});
+
 
 function saveRecord(){
 
-const record = {
+let systolic = document.getElementById("systolic").value;
+let diastolic = document.getElementById("diastolic").value;
+let spo2 = document.getElementById("spo2").value;
+let temp = document.getElementById("temp").value;
+let notes = document.getElementById("notes").value;
 
-systolic: document.getElementById("sys").value,
+// BASIC VALIDATION
+if(!systolic || !diastolic || !spo2 || !temp){
+alert("Please fill all required fields");
+return;
+}
 
-diastolic: document.getElementById("dia").value,
+// SAVE TO FIREBASE
+db.ref("manualRecords").push({
 
-spo2: document.getElementById("spo2Input").value,
+systolic: Number(systolic),
+diastolic: Number(diastolic),
+spo2: Number(spo2),
+temp: Number(temp),
 
-temp: document.getElementById("tempInput").value,
-
-notes: document.getElementById("notes").value,
+notes: notes || "", // ✅ FIXED (always saved)
 
 timestamp: Date.now()
 
-};
+})
+.then(()=>{
 
-recordsRef.push(record);
+alert("Record saved successfully!");
 
-alert("Record saved");
+// CLEAR FORM
+document.getElementById("systolic").value = "";
+document.getElementById("diastolic").value = "";
+document.getElementById("spo2").value = "";
+document.getElementById("temp").value = "";
+document.getElementById("notes").value = "";
+
+})
+.catch(err=>{
+console.error(err);
+alert("Error saving record");
+});
 
 }
